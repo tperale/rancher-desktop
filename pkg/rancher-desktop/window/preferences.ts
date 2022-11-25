@@ -14,7 +14,11 @@ export const preferencesNavItems: NavItems[] = [
     name: 'Application',
     tabs: ['behavior', 'environment'],
   },
-  { name: process.platform === 'win32' ? 'WSL' : 'Virtual Machine' },
+  // { name: process.platform === 'win32' ? 'WSL' : 'Virtual Machine' },
+  { 
+    name: 'WSL',
+    tabs: ['integration', 'proxy'],
+  },
   {
     name: 'Container Engine',
     tabs: ['general', 'allowed-images'],

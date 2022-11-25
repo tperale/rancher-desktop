@@ -1,27 +1,37 @@
 <template>
-  <section class="wsl-integrations">
-    <h3 v-if="description" v-text="description" />
-    <div
-      v-for="item of integrationsList"
-      :key="item.name"
-      :data-test="`item-${item.name}`"
+  <div class="preferences-body">
+    <rd-fieldset
+      :legend-text="t('integrations.windows.description', { }, true)"
     >
-      <checkbox
-        :value="item.value"
-        :label="item.name"
-        :disabled="item.disabled"
-        :description="item.description"
-        @input="toggleIntegration(item.name, $event)"
-      />
-    </div>
-  </section>
+      <section class="wsl-integrations">
+        <h3 v-if="description" v-text="description" />
+        <div
+          v-for="item of integrationsList"
+          :key="item.name"
+          :data-test="`item-${item.name}`"
+        >
+          <checkbox
+            :value="item.value"
+            :label="item.name"
+            :disabled="item.disabled"
+            :description="item.description"
+            @input="toggleIntegration(item.name, $event)"
+          />
+        </div>
+      </section>
+    </rd-fieldset>
+  </div>
 </template>
 
 <script lang="ts">
+import { mapGetters } from 'vuex';
+
 import { Banner, Card, Checkbox } from '@rancher/components';
+import RdFieldset from '@pkg/components/form/RdFieldset.vue';
+import { RecursiveTypes } from '@pkg/utils/typeUtils';
+import { Settings } from '@pkg/config/settings';
 import Vue from 'vue';
 import Component from 'vue-class-component';
-
 import type { PropType } from 'vue';
 
 const WSLIntegrationProps = Vue.extend({
@@ -39,11 +49,13 @@ const WSLIntegrationProps = Vue.extend({
       default: () => ({}),
     },
   },
+
+  computed: { ...mapGetters('preferences', ['getWslIntegrations']) },
 });
 
 @Component({
   components: {
-    Banner, Card, Checkbox,
+    Banner, Card, Checkbox, RdFieldset
   },
 })
 class WSLIntegration extends WSLIntegrationProps {
@@ -57,7 +69,7 @@ class WSLIntegration extends WSLIntegrationProps {
   get integrationsList() {
     const results: {name: string, value: boolean, disabled: boolean, description: string}[] = [];
 
-    for (const [name, value] of Object.entries(this.integrations)) {
+    for (const [name, value] of Object.entries(this.getWslIntegrations)) {
       if (typeof value === 'boolean') {
         if (value === this.busy[name]) {
           this.$delete(this.busy, name);
@@ -76,9 +88,11 @@ class WSLIntegration extends WSLIntegrationProps {
     return results.sort((x, y) => x.name.localeCompare(y.name));
   }
 
-  toggleIntegration(name: string, value: boolean) {
-    this.$set(this.busy, name, value);
-    this.$emit('integration-set', name, value);
+  toggleIntegration(distro: string, value: boolean) {
+    const property: keyof RecursiveTypes<Settings> = `kubernetes.WSLIntegrations["${ distro }"]` as any;
+    this.$set(this.busy, distro, value);
+    this.$store.dispatch('preferences/updateWslIntegrations', { distribution: `["${ distro }"]`, value });
+    this.$store.dispatch('preferences/updatePreferencesData', { property, value });
   }
 }
 export default WSLIntegration;
