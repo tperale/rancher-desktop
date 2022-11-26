@@ -79,7 +79,7 @@ class WSLIntegration extends WSLIntegrationProps {
         });
       } else {
         results.push({
-          name, value: false, disabled: true, description: value,
+          name, value: false, disabled: true, description: String(value),
         });
         this.$delete(this.busy, name);
       }

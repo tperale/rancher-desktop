@@ -78,6 +78,10 @@ export default class SettingsValidator {
         hostResolver:               this.checkPlatform('win32', this.checkBoolean),
         experimental:               { socketVMNet: this.checkPlatform('darwin', this.checkBoolean) },
       },
+      wslProxy: { 
+        address: this.checkString, 
+        port: this.checkNumber(1, 65535),
+      },
       portForwarding: { includeKubernetesServices: this.checkBoolean },
       images:         {
         showAll:   this.checkBoolean,

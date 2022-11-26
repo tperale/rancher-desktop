@@ -2,9 +2,10 @@
 import { mapGetters } from 'vuex';
 
 import RdFieldset from '@pkg/components/form/RdFieldset.vue';
+import { RecursiveTypes } from '@pkg/utils/typeUtils';
+import { Settings } from '@pkg/config/settings';
 import Vue from 'vue';
 import Component from 'vue-class-component';
-
 import type { PropType } from 'vue';
 
 export default Vue.extend({
@@ -19,10 +20,10 @@ export default Vue.extend({
       type:    Boolean,
       default: false,
     },
-  },
-
-  computed: { 
-    ...mapGetters('preferences', {proxy: 'getWslProxy'}),
+    preferences: {
+      type:     Object as PropType<Settings>,
+      required: true,
+    },
   },
 
   components: {
@@ -31,12 +32,14 @@ export default Vue.extend({
 
   methods: {
     onAddressChange(value: string | null) {
-      console.log(value);
-      this.$store.dispatch('preferences/updateWslProxy', { address: value });
+      console.log(this.preferences)
+      const property: keyof RecursiveTypes<Settings> = 'wslProxy.address' as any;
+      this.$store.dispatch('preferences/updatePreferencesData', { property, value });
     },
 
     onPortChange(value: number | null) {
-      this.$store.dispatch('preferences/updateWslProxy', { port: value });
+      const property: keyof RecursiveTypes<Settings> = 'wslProxy.port' as any;
+      this.$store.dispatch('preferences/updatePreferencesData', { property, value });
     },
 
     castToNumber(val: string): number | null {
@@ -67,7 +70,7 @@ export default Vue.extend({
         >
           <input
             :disabled="isProxyDisabled"
- proxy.           :value="proxy.address"
+            :value="preferences.wslProxy.address"
             @input="onAddressChange($event.target.value)"
           />
         </rd-fieldset>
@@ -77,7 +80,7 @@ export default Vue.extend({
           <input
             type="number"
             :disabled="isProxyDisabled"
-            :value="proxy.port"
+            :value="preferences.wslProxy.port"
             @input="onPortChange(castToNumber($event.target.value))"
           />
         </rd-fieldset>

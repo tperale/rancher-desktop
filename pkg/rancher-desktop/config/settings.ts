@@ -73,6 +73,7 @@ export const defaultSettings = {
       socketVMNet: false,
     },
   },
+  wslProxy: { address: '', port: 3128 },
   portForwarding:  { includeKubernetesServices: false },
   images:          {
     showAll:   true,

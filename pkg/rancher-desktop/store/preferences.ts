@@ -19,7 +19,6 @@ interface PreferencesState {
   initialPreferences: Settings;
   preferences: Settings;
   wslIntegrations: { [distribution: string]: string | boolean};
-  wslProxy: { address: string, port: number };
   isPlatformWindows: boolean;
   hasError: boolean;
   severities: Severities;
@@ -39,10 +38,6 @@ export const state: () => PreferencesState = () => (
     initialPreferences: _.cloneDeep(defaultSettings),
     preferences:        _.cloneDeep(defaultSettings),
     wslIntegrations:    { },
-    wslProxy:           { 
-      address: '',
-      port: 0,
-    },
     isPlatformWindows:  false,
     hasError:           false,
     severities:         {
@@ -61,9 +56,6 @@ export const mutations: MutationsType<PreferencesState> = {
   },
   SET_WSL_INTEGRATIONS(state, integrations) {
     state.wslIntegrations = integrations;
-  },
-  SET_WSL_PROXY(state, proxy) {
-    state.wslProxy = proxy;
   },
   SET_IS_PLATFORM_WINDOWS(state, isPlatformWindows) {
     state.isPlatformWindows = isPlatformWindows;
@@ -166,9 +158,6 @@ export const actions = {
 
     commit('SET_WSL_INTEGRATIONS', _.set(_.cloneDeep(state.wslIntegrations), distribution, value));
   },
-  updateWslProxy({ commit, state }: PrefActionContext, args: {address: string, port: boolean}) {
-    commit('SET_WSL_PROXY', _.assign(_.cloneDeep(state.wslProxy), args));
-  },
   setPlatformWindows({ commit }: PrefActionContext, isPlatformWindows: boolean) {
     commit('SET_IS_PLATFORM_WINDOWS', isPlatformWindows);
   },
@@ -248,9 +237,6 @@ export const getters: GetterTree<PreferencesState, PreferencesState> = {
   },
   getWslIntegrations(state: PreferencesState) {
     return state.wslIntegrations;
-  },
-  getWslProxy(state: PreferencesState) {
-    return state.wslProxy;
   },
   isPlatformWindows(state: PreferencesState) {
     return state.isPlatformWindows;

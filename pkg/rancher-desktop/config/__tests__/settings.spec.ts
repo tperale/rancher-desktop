@@ -38,6 +38,10 @@ describe('updateFromCommandLine', () => {
         hostResolver:             true,
         experimental:   { socketVMNet: true },
       },
+      wslProxy: {
+        address: '',
+        port: 3128,
+      },
       portForwarding: { includeKubernetesServices: false },
       images:         {
         showAll:   true,
