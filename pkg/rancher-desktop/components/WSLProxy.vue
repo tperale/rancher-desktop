@@ -33,12 +33,12 @@ export default Vue.extend({
   methods: {
     onAddressChange(value: string | null) {
       console.log(this.preferences)
-      const property: keyof RecursiveTypes<Settings> = 'wslProxy.address' as any;
+      const property: keyof RecursiveTypes<Settings> = 'kubernetes.WSLProxy.address' as any;
       this.$store.dispatch('preferences/updatePreferencesData', { property, value });
     },
 
     onPortChange(value: number | null) {
-      const property: keyof RecursiveTypes<Settings> = 'wslProxy.port' as any;
+      const property: keyof RecursiveTypes<Settings> = 'kubernetes.WSLProxy.port' as any;
       this.$store.dispatch('preferences/updatePreferencesData', { property, value });
     },
 
@@ -70,7 +70,7 @@ export default Vue.extend({
         >
           <input
             :disabled="isProxyDisabled"
-            :value="preferences.wslProxy.address"
+            :value="preferences.kubernetes.WSLProxy.address"
             @input="onAddressChange($event.target.value)"
           />
         </rd-fieldset>
@@ -80,7 +80,7 @@ export default Vue.extend({
           <input
             type="number"
             :disabled="isProxyDisabled"
-            :value="preferences.wslProxy.port"
+            :value="preferences.kubernetes.WSLProxy.port"
             @input="onPortChange(castToNumber($event.target.value))"
           />
         </rd-fieldset>

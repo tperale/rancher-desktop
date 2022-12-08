@@ -37,10 +37,10 @@ describe('updateFromCommandLine', () => {
         suppressSudo:             false,
         hostResolver:             true,
         experimental:   { socketVMNet: true },
-      },
-      wslProxy: {
-        address: '',
-        port: 3128,
+        WSLProxy:                   {
+          address: '',
+          port: 3128,
+        },
       },
       portForwarding: { includeKubernetesServices: false },
       images:         {
