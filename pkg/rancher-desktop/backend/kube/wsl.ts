@@ -321,6 +321,7 @@ export default class WSLKubernetesBackend extends events.EventEmitter implements
         'kubernetes.options.traefik': undefined,
         'kubernetes.options.flannel': undefined,
         'kubernetes.hostResolver':    undefined,
+        'kubernetes.WSLProxy':        undefined,
       },
       extras,
     ));

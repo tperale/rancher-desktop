@@ -1025,6 +1025,15 @@ export default class WSLBackend extends events.EventEmitter implements VMBackend
   }
 
   /**
+   * Stop the given OpenRC service.
+   *
+   * @param service The name of the OpenRC service to stop.
+   */
+  async stopService(service: string) {
+    await this.execCommand('/usr/local/bin/wsl-service', service, 'stop');
+  }
+
+  /**
    * Verify that the given command runs successfully
    * @param command
    */
@@ -1048,6 +1057,23 @@ export default class WSLBackend extends events.EventEmitter implements VMBackend
       }
       await util.promisify(setTimeout)(waitTime);
     }
+  }
+
+  async writeProxySettings(proxy): Promise<void> {
+    const address = `${proxy.address}:${proxy.port}`
+    const contents = `HTTP_PROXY=${address}\nHTTPS_PROXY=${address}`;
+    await this.writeFile(`/etc/profile`, contents);
+
+    const docker_config = await this.readFile(`~/.docker/config.json`);
+    const docker_content = JSON.parse(docker_config ? docker_config : "{}")
+    if (docker_content) {
+      docker_content!.default.httpProxy = adress;
+      docker_content!.default.httpsProxy = adress;
+    }
+    await this.writeFile(`~/.docker/config.json`, JSON.stringify(docker_content));
+
+    this.startService("docker")
+    this.stopService("docker")
   }
 
   async start(config_: BackendSettings): Promise<void> {
@@ -1104,6 +1130,9 @@ export default class WSLBackend extends events.EventEmitter implements VMBackend
               await this.progressTracker.action('Installing the docker-credential helper', 10, async() => {
                 // This must run after /etc/rancher is mounted
                 await this.installCredentialHelper();
+              }),
+              this.progressTracker.action('Proxy Setup', 50, async() => {
+                this.writeProxySettings(config.kubernetes.WSLProxy);
               }),
               this.progressTracker.action('DNS configuration', 50, async() => {
                 await this.writeFile('/etc/init.d/host-resolver', SERVICE_SCRIPT_HOST_RESOLVER, { permissions: 0o755 });

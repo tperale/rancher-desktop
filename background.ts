@@ -515,6 +515,10 @@ async function doK8sReset(arg: 'fast' | 'wipe' | 'fullRestart', context: Command
   }
 }
 
+async function doProxySetup(): Promise<void> {
+
+}
+
 ipcMainProxy.on('k8s-restart', async() => {
   if (cfg.kubernetes.port !== k8smanager.kubeBackend.desiredPort) {
     // On port change, we need to wipe the VM.
@@ -754,6 +758,7 @@ async function handleFailure(payload: any) {
 }
 
 function doFullRestart(context: CommandWorkerInterface.CommandContext) {
+  doProxySetup();
   doK8sReset('fullRestart', context).catch((err: any) => {
     console.log(`Error restarting: ${ err }`);
   });
