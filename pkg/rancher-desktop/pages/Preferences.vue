@@ -1,24 +1,25 @@
 <script lang="ts">
 import os from 'os';
 
-import { ipcRenderer } from 'electron';
 import Vue from 'vue';
 import { mapGetters, mapState } from 'vuex';
 
 import EmptyState from '@pkg/components/EmptyState.vue';
-import PreferencesActions from '@pkg/components/Preferences/ModalActions.vue';
 import PreferencesBody from '@pkg/components/Preferences/ModalBody.vue';
 import PreferencesHeader from '@pkg/components/Preferences/ModalHeader.vue';
 import PreferencesNav from '@pkg/components/Preferences/ModalNav.vue';
 import type { TransientSettings } from '@pkg/config/transientSettings';
 import type { ServerState } from '@pkg/main/commandServer/httpCommandServer';
+import { ipcRenderer } from '@pkg/utils/ipcRenderer';
 import { RecursivePartial } from '@pkg/utils/typeUtils';
 import { preferencesNavItems } from '@pkg/window/preferences';
+
+import PreferencesFooter from '@/components/Preferences/ModalFooter.vue';
 
 export default Vue.extend({
   name:       'preferences-modal',
   components: {
-    PreferencesHeader, PreferencesNav, PreferencesBody, PreferencesActions, EmptyState,
+    PreferencesHeader, PreferencesNav, PreferencesBody, PreferencesFooter, EmptyState,
   },
   layout: 'preferences',
   data() {
@@ -52,7 +53,7 @@ export default Vue.extend({
   beforeDestroy() {
     window.removeEventListener('keydown', this.handleKeypress, true);
   },
-  methods:  {
+  methods: {
     async navChanged(current: string) {
       await this.$store.dispatch(
         'transientSettings/commitPreferences',
@@ -155,8 +156,8 @@ export default Vue.extend({
         </empty-state>
       </div>
     </preferences-body>
-    <preferences-actions
-      class="preferences-actions"
+    <preferences-footer
+      class="preferences-footer"
       @cancel="closePreferences"
       @apply="applyPreferences"
     />
@@ -182,8 +183,8 @@ export default Vue.extend({
     overflow: auto;
   }
 
-  .preferences-actions {
-    grid-area: actions;
+  .preferences-footer {
+    grid-area: footer;
   }
 
   .modal-grid {
@@ -194,7 +195,7 @@ export default Vue.extend({
     grid-template-areas:
       "header header"
       "nav body"
-      "actions actions";
+      "footer footer";
   }
 
   .preferences-error {

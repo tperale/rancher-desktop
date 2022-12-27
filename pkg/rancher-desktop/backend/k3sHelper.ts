@@ -44,10 +44,10 @@ const console = Logging.k8s;
 export type ShortVersion = string;
 
 export interface ReleaseAPIEntry {
-  // eslint-disable-next-line camelcase -- Field name comes from JSON
+
   tag_name: string;
   assets: {
-    // eslint-disable-next-line camelcase -- Field name comes from JSON
+
     browser_download_url: string;
     name: string;
   }[];
@@ -759,7 +759,7 @@ export default class K3sHelper extends events.EventEmitter {
         }
 
         if (!response || !outPath) {
-          throw new Error(`Error downloading ${ filename } ${ version }: No ${ filekey }s found}`);
+          throw new Error(`Error downloading ${ filename } ${ version }: No ${ filekey }s found`);
         }
 
         const progresskey = filekey as keyof typeof K3sHelper.prototype.filenames;

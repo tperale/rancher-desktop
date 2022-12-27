@@ -83,10 +83,10 @@
 
 import SortableTable from '@pkg/components/SortableTable';
 import { Card, Checkbox } from '@rancher/components';
-import { ipcRenderer } from 'electron';
 
 import ImagesOutputWindow from '@pkg/components/ImagesOutputWindow.vue';
 import getImageOutputCuller from '@pkg/utils/imageOutputCuller';
+import { ipcRenderer } from '@pkg/utils/ipcRenderer';
 import { parseSi } from '@pkg/utils/units';
 
 export default {
@@ -96,7 +96,7 @@ export default {
     SortableTable,
     ImagesOutputWindow,
   },
-  props:      {
+  props: {
     images: {
       type:     Array,
       required: true,
@@ -126,7 +126,7 @@ export default {
 
   data() {
     return {
-      currentCommand:   null,
+      currentCommand: null,
       headers:
       [
         {
@@ -401,10 +401,11 @@ export default {
     display: flex;
     align-items: flex-end;
     gap: 1rem;
+    height: 100%;
   }
 
   .all-images {
-    margin-bottom: 11px;
+    margin-bottom: 12px;
   }
 
   .imagesTable::v-deep .search-box {

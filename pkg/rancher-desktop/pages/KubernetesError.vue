@@ -24,7 +24,7 @@
           <p>{{ lastCommandComment }}</p>
         </div>
         <div v-if="lastLogLines.length" class="error-part grow">
-          <h4>Some recent logfile lines:</h4>
+          <h4>Some recent <a href="#" @click.prevent="showLogs">logfile</a> lines:</h4>
           <pre id="log-lines">{{ joinedLastLogLines }}</pre>
         </div>
       </div>
@@ -38,8 +38,9 @@
 <script lang="ts">
 import os from 'os';
 
-import { ipcRenderer } from 'electron';
 import Vue from 'vue';
+
+import { ipcRenderer } from '@pkg/utils/ipcRenderer';
 
 export default Vue.extend({
   layout: 'dialog',
@@ -89,6 +90,9 @@ export default Vue.extend({
   methods: {
     close() {
       window.close();
+    },
+    showLogs() {
+      ipcRenderer.send('show-logs');
     },
   },
 });

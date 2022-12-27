@@ -78,7 +78,7 @@ interface LonghornUpgraderResponse {
 
 export interface GithubReleaseAsset {
   url: string;
-  // eslint-disable-next-line camelcase
+
   browser_download_url: string;
   id: number;
   name: string;
@@ -93,13 +93,13 @@ export interface GithubReleaseAsset {
 interface GithubReleaseInfo {
   url: string;
   id: number;
-  // eslint-disable-next-line camelcase
+
   tag_name: string;
   name: string;
   body: string;
   draft: boolean;
   prerelease: boolean;
-  // eslint-disable-next-line camelcase
+
   published_at: string;
   assets: GithubReleaseAsset[];
 }
@@ -286,9 +286,7 @@ export default class LonghornProvider extends Provider<LonghornUpdateInfo> {
       case 'linux':
         return (asset: GithubReleaseAsset) => asset.name.endsWith('AppImage');
       case 'win32': {
-        const useWix = !!parseInt(process.env.RD_FEAT_WIX ?? '0', 10);
-
-        return (asset: GithubReleaseAsset) => asset.name.endsWith(useWix ? '.msi' : '.exe');
+        return (asset: GithubReleaseAsset) => asset.name.endsWith('.msi');
       }
       }
     })();
@@ -338,15 +336,15 @@ export default class LonghornProvider extends Provider<LonghornUpdateInfo> {
     const cache = await this.checkForUpdates();
 
     return {
-      files:   [{
+      files: [{
         url:                   cache.file.url,
         size:                  cache.file.size,
         sha512:                cache.file.checksum,
         isAdminRightsRequired: false,
       }],
       version:        cache.release.tag,
-      path:                     '',
-      sha512:                   '',
+      path:           '',
+      sha512:         '',
       releaseName:    cache.release.name,
       releaseNotes:   cache.release.notes,
       releaseDate:    cache.release.date,

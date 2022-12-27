@@ -35,8 +35,9 @@
 
 <script lang="ts">
 import { Checkbox } from '@rancher/components';
-import { ipcRenderer } from 'electron';
 import Vue from 'vue';
+
+import { ipcRenderer } from '@pkg/utils/ipcRenderer';
 
 type SudoReason = 'networking' | 'docker-socket';
 
@@ -62,9 +63,9 @@ export default Vue.extend({
   layout:     'dialog',
   data() {
     return {
-      explanations:    {} as Partial<Record<SudoReason, string[]>>,
+      explanations: {} as Partial<Record<SudoReason, string[]>>,
       sized:        false,
-      suppress:        false,
+      suppress:     false,
       SUDO_REASON_DESCRIPTION,
     };
   },

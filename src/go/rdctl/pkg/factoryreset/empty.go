@@ -20,11 +20,12 @@ package factoryreset
 
 import "fmt"
 
-func GetLockfilePath(_ string) (string, error) {
-	return "", fmt.Errorf("internal error: GetLockfilePath shouldn't be called")
+func CheckProcessWindows() (bool, error) {
+	return false, fmt.Errorf("internal error: CheckProcessWindows shouldn't be called")
 }
 
-func KillRancherDesktop() {
+func KillRancherDesktop() error {
+	return fmt.Errorf("internal error: KillRancherDesktop shouldn't be called")
 }
 
 func deleteWindowsData(_ bool, _ string) error {

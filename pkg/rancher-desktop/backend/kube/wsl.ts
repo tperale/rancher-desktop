@@ -184,7 +184,7 @@ export default class WSLKubernetesBackend extends events.EventEmitter implements
     }
   }
 
-  async install(config: BackendSettings, version: semver.SemVer) {
+  async install(config: BackendSettings, version: semver.SemVer, allowSudo: boolean) {
     await this.vm.runInstallScript(INSTALL_K3S_SCRIPT,
       'install-k3s', version.raw, await this.vm.wslify(path.join(paths.cache, 'k3s')));
   }
@@ -314,14 +314,15 @@ export default class WSLKubernetesBackend extends events.EventEmitter implements
 
           return 'restart';
         },
-        'kubernetes.port':            undefined,
-        'kubernetes.containerEngine': undefined,
-        'kubernetes.enabled':         undefined,
-        'kubernetes.WSLIntegrations': undefined,
-        'kubernetes.options.traefik': undefined,
-        'kubernetes.options.flannel': undefined,
-        'kubernetes.hostResolver':    undefined,
+        'kubernetes.port':                        undefined,
+        'kubernetes.containerEngine':             undefined,
+        'kubernetes.enabled':                     undefined,
+        'kubernetes.WSLIntegrations':             undefined,
+        'kubernetes.options.traefik':             undefined,
+        'kubernetes.options.flannel':             undefined,
+        'kubernetes.hostResolver':                undefined,
         'kubernetes.WSLProxy':        undefined,
+        'containerEngine.imageAllowList.enabled': undefined,
       },
       extras,
     ));

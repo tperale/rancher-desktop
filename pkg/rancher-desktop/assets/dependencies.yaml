@@ -1,19 +1,19 @@
-limaAndQemu: "1.27"
+limaAndQemu: "1.28"
 alpineLimaISO:
   isoVersion: 0.2.25.rd2
   alpineVersion: 3.16.0
 WSLDistro: "0.31"
 kuberlr: 0.4.2
-helm: 3.10.2
-dockerCLI: 20.10.17
+helm: 3.10.3
+dockerCLI: 20.10.21
 dockerBuildx: 0.9.1
-dockerCompose: 2.12.2
-trivy: 0.34.0
+dockerCompose: 2.14.2
+trivy: 0.35.0
 steve: 0.1.0-beta9
-guestAgent: 0.3.6
-rancherDashboard: desktop-v2.6.8.beta.3
+guestAgent: 0.3.7
+rancherDashboard: desktop-v2.7.0.beta.1
 dockerProvidedCredentialHelpers: 0.6.4
 ECRCredentialHelper: 0.6.0
-hostResolver: 0.1.2
+hostResolver: 0.1.3
 mobyOpenAPISpec: "1.42"
 wix: wix3112rtm

@@ -74,9 +74,8 @@ func doShutdown(shutdownSettings *shutdownSettingsStruct) ([]byte, error) {
 				logrus.Debugf("Can't find default config file %s, assuming Rancher Desktop isn't running.\n", rdconfig.DefaultConfigPath)
 				// It's probably not running, so shutdown is a no-op
 				return nil, nil
-			} else {
-				return nil, err
 			}
+			return nil, err
 		}
 		urlError := new(url.Error)
 		if errors.As(err, &urlError) {
@@ -84,9 +83,6 @@ func doShutdown(shutdownSettings *shutdownSettingsStruct) ([]byte, error) {
 		}
 		return nil, err
 	}
-	if !shutdownSettings.WaitForShutdown {
-		return output, nil
-	}
-	err = shutdown.FinishShutdown()
+	err = shutdown.FinishShutdown(shutdownSettings.WaitForShutdown)
 	return output, err
 }

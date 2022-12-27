@@ -28,6 +28,11 @@
       <DialogRef Id="RDWelcomeDlg" />
       <UIRef Id="WixUI_ErrorProgressText" />
 
+      <Publish Dialog="ExitDialog"
+         Control="Finish"
+         Event="DoAction"
+         Value="LaunchApplication"
+      >WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 and NOT Installed</Publish>
       <Publish Dialog="ExitDialog" Control="Finish" Event="EndDialog" Value="Return" Order="999">1</Publish>
 
       <Publish Dialog="VerifyReadyDlg" Control="Back" Event="NewDialog" Value="MaintenanceTypeDlg">1</Publish>
@@ -37,28 +42,11 @@
       <Publish Dialog="MaintenanceTypeDlg" Control="RepairButton" Event="NewDialog" Value="VerifyReadyDlg">1</Publish>
       <Publish Dialog="MaintenanceTypeDlg" Control="RemoveButton" Event="NewDialog" Value="VerifyReadyDlg">1</Publish>
       <Publish Dialog="MaintenanceTypeDlg" Control="Back" Event="NewDialog" Value="MaintenanceWelcomeDlg">1</Publish>
-
-      <!-- Normal Install Flow -->
-
-      <Publish Dialog="RDWelcomeDlg" Control="Next" Event="NewDialog" Order="1" Value="InstallScopeDlg">NOT Installed</Publish>
-      <!-- If the WSL kernel is not installed, force all-users install (so we can install WSL) -->
-      <Publish Dialog="RDWelcomeDlg" Control="Next" Event="NewDialog" Order="2" Value="VerifyReadyDlg">NOT WSLKERNELINSTALLED</Publish>
-
-      <Publish Dialog="InstallScopeDlg" Control="Back" Event="NewDialog" Value="RDWelcomeDlg">1</Publish>
-      <Publish Dialog="InstallScopeDlg" Control="Next" Order="1" Property="MSIINSTALLPERUSER" Value="1">WixAppFolder = "WixPerUserFolder"</Publish>
-      <Publish Dialog="InstallScopeDlg" Control="Next" Order="2" Property="ALLUSERS" Value="{}">MSIINSTALLPERUSER</Publish>
-      <Publish Dialog="InstallScopeDlg" Control="Next" Order="3" Event="EndDialog" Value="Return">MSIINSTALLPERUSER</Publish>
-      <!-- if installing for all users, add the VerifyReadyDlg so that the user sees the UAC shield -->
-      <Publish Dialog="InstallScopeDlg" Control="Next" Order="4" Event="NewDialog" Value="VerifyReadyDlg">NOT MSIINSTALLPERUSER</Publish>
-
-      <Publish Dialog="VerifyReadyDlg" Order="2" Control="Back" Event="NewDialog" Value="RDWelcomeDlg">NOT Installed</Publish>
-      <Publish Dialog="VerifyReadyDlg" Order="3" Control="Back" Event="NewDialog" Value="InstallScopeDlg">WSLKERNELINSTALLED</Publish>
-      <!-- Getting to VerifyReadyDlg means we need to install for all users (used when WSL is missing) -->
-      <Publish Dialog="VerifyReadyDlg" Order="4" Control="Install" Property="MSIINSTALLPERUSER" Value="{}">1</Publish>
-      <Publish Dialog="VerifyReadyDlg" Order="5" Control="Install" Property="ALLUSERS" Value="1">1</Publish>
-
     </UI>
 
+    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Run Rancher Desktop" />
+    <Property Id="WixShellExecTarget" Value="[#mainExecutable]" />
+    <CustomAction Id="LaunchApplication" BinaryKey="WixCA" DllEntry="WixShellExec" Impersonate="yes" />
     <InstallUISequence>
       <Show Dialog="MaintenanceWelcomeDlg" Before="RDWelcomeDlg">Installed AND NOT RESUME AND NOT Preselected AND NOT PATCH</Show>
     </InstallUISequence>

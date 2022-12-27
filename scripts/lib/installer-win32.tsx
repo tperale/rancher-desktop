@@ -68,6 +68,8 @@ export default async function buildInstaller(workDir: string, appDir: string, de
     path.join(workDir, 'project.wxs'),
     path.join(process.cwd(), 'build', 'wix', 'dialogs.wxs'),
     path.join(process.cwd(), 'build', 'wix', 'welcome.wxs'),
+    path.join(process.cwd(), 'build', 'wix', 'scope.wxs'),
+    path.join(process.cwd(), 'build', 'wix', 'verify.wxs'),
   ];
 
   await Promise.all(inputs.map(input => spawnFile(
@@ -97,6 +99,8 @@ export default async function buildInstaller(workDir: string, appDir: string, de
     '-sice:ICE61',
     `-dappDir=${ appDir }`,
     `-dlicenseFile=${ path.join(appDir, 'build', 'license.rtf') }`,
+    `-dWixUIBannerBmp=${ path.join(appDir, 'build', 'wix', 'bannrbmp.png') }`,
+    `-dWixUIDialogBmp=${ path.join(appDir, 'build', 'wix', 'dlgbmp.png') }`,
     '-ext', 'WixUIExtension',
     '-ext', 'WixUtilExtension',
     '-nologo',
@@ -105,6 +109,7 @@ export default async function buildInstaller(workDir: string, appDir: string, de
     '-wx',
     '-cc', path.join(process.cwd(), 'dist', 'wix-cache'),
     '-reusecab',
+    '-loc', path.join(path.join(process.cwd(), 'build', 'wix', 'string-overrides.wxl')),
     ...inputs.map(n => path.join(workDir, `${ path.basename(n, '.wxs') }.wixobj`)),
   ], { stdio: 'inherit' });
   console.log(`Built Windows installer: ${ outFile }`);

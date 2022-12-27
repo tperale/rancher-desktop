@@ -9,7 +9,7 @@ import path from 'path';
  * Element is a class for interpreting JSX; we only need the bare basics to
  * generate a valid XML as input to the WiX toolchain.
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars -- Can't detect @jsx usage.
+
 export class Element {
   constructor(tag: string, attribs: Record<string, string>, ...children: (Element | string)[]) {
     this.tag = tag;
@@ -26,7 +26,7 @@ export class Element {
 
   tag: string;
   attribs: Record<string, string>;
-  // eslint-disable-next-line no-use-before-define -- ESLint gets confused by recursive references
+
   children: (Element | string)[];
 
   /** Convert the Element to serialized XML. */
@@ -75,6 +75,8 @@ const Directory = 'Directory';
 const File = 'File';
 const Fragment = 'Fragment';
 const PermissionEx = 'PermissionEx';
+const RegistryKey = 'RegistryKey';
+const RegistryValue = 'RegistryValue';
 const ServiceControl = 'ServiceControl';
 const ServiceInstall = 'ServiceInstall';
 const Shortcut = 'Shortcut';
@@ -155,6 +157,10 @@ function getDescendantDirs(d: directory): directory[] {
  */
 export default async function generateFileList(rootPath: string): Promise<string> {
   const rootDir = await walk(rootPath);
+
+  // Drop the "build/" directory, those are files to build the installer.
+  rootDir.directories = rootDir.directories.filter(d => d.name !== 'build');
+
   const descendantDirs = getDescendantDirs(rootDir).filter(d => d.files.length > 0);
 
   const specialComponents: Record<string, (d: directory, f: { name: string, id: string }) => Element | null> = {
@@ -188,11 +194,6 @@ export default async function generateFileList(rootPath: string): Promise<string
       </Component>;
     },
 
-    'build\\license.rtf': () => {
-      // This is used for the installer, and does not need to shipped.
-      return null;
-    },
-
     'electron-builder.yml': () => {
       // This files does not need to be packaged.
       return null;
@@ -213,7 +214,7 @@ export default async function generateFileList(rootPath: string): Promise<string
 
     'resources\\resources\\win32\\internal\\privileged-service.exe': (d, f) => {
       return <Component>
-        <Condition>NOT MSIINSTALLPERUSER</Condition>
+        <Condition>{'MSIINSTALLPERUSER <> 1'}</Condition>
         <File
           Name={f.name}
           Source={path.join('$(var.appDir)', d.name, f.name)}
@@ -260,6 +261,13 @@ export default async function generateFileList(rootPath: string): Promise<string
           Remove="both"
           Wait="yes"
         />
+        <RegistryKey
+          Root="HKLM"
+          Key="SYSTEM\CurrentControlSet\Services\EventLog\Application\RancherDesktopPrivilegedService"
+        >
+          <RegistryValue Name="EventMessageFile" Type="expandable" Value="%SYSTEMROOT%\System32\EventCreate.exe" />
+          <RegistryValue Name="TypesSupported" Type="integer" Value="7" />{/* Error, warning, info */}
+        </RegistryKey>
       </Component>;
     },
   };

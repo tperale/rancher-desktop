@@ -100,11 +100,13 @@ func deleteLinuxData(removeKubernetesCache bool) error {
 	altAppHomePath := path.Join(homeDir, ".rd")
 	cachePath := path.Join(cacheHomePath, "rancher-desktop")
 	configPath := path.Join(configHomePath, "rancher-desktop")
+	electronConfigPath := path.Join(configHomePath, "Rancher Desktop")
 	dataHomePath := path.Join(dataDir, "rancher-desktop")
 
 	pathList := []string{
 		altAppHomePath,
 		configPath,
+		electronConfigPath,
 		path.Join(homeDir, ".local", "state", "rancher-desktop"),
 	}
 	logsPath := os.Getenv("RD_LOGS_DIR")
@@ -121,12 +123,19 @@ func deleteLinuxData(removeKubernetesCache bool) error {
 
 func unregisterAndDeleteWindowsData(removeKubernetesCache bool) error {
 	if err := unregisterWSL(); err != nil {
+		logrus.Errorf("could not unregister WSL: %s", err)
 		return err
 	}
 	if err := deleteWindowsData(!removeKubernetesCache, "rancher-desktop"); err != nil {
+		logrus.Errorf("could not delete data: %s", err)
 		return err
 	}
-	return clearDockerContext()
+	if err := clearDockerContext(); err != nil {
+		logrus.Errorf("could not clear docker context: %s", err)
+		return err
+	}
+	logrus.Infoln("successfully cleared data.")
+	return nil
 }
 
 // Most of the errors in this function are reported, but we continue to try to delete things,
@@ -139,7 +148,7 @@ func deleteUnixLikeData(homeDir string, altAppHomePath string, configHomePath st
 	}
 	for _, currentPath := range pathList {
 		if err := os.RemoveAll(currentPath); err != nil {
-			logrus.Errorf("Error trying to remove %s: %w", currentPath, err)
+			logrus.Errorf("Error trying to remove %s: %s", currentPath, err)
 		}
 	}
 	if err := clearDockerContext(); err != nil {
@@ -155,7 +164,7 @@ func deleteUnixLikeData(homeDir string, altAppHomePath string, configHomePath st
 		".profile",
 		".zshrc",
 		".cshrc",
-		".tshrc",
+		".tcshrc",
 	}
 	for i, s := range rawPaths {
 		rawPaths[i] = path.Join(homeDir, s)

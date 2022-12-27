@@ -15,7 +15,7 @@ export default Vue.extend({
     RdFieldset,
     StringList,
   },
-  props:      {
+  props: {
     preferences: {
       type:     Object as PropType<Settings>,
       required: true,
@@ -41,6 +41,19 @@ export default Vue.extend({
   methods: {
     onChange<P extends keyof RecursiveTypes<Settings>>(property: P, value: RecursiveTypes<Settings>[P]) {
       this.$store.dispatch('preferences/updatePreferencesData', { property, value });
+    },
+    onType(item: string) {
+      if (item !== null) {
+        this.setCanApply(item.trim().length > 0);
+      }
+    },
+    onDuplicate(err: boolean) {
+      if (err) {
+        this.setCanApply(false);
+      }
+    },
+    setCanApply(val: boolean) {
+      this.$store.dispatch('preferences/setCanApply', val);
     },
   },
 });
@@ -79,6 +92,8 @@ export default Vue.extend({
       :actions-position="'left'"
       :error-messages="patternsErrorMessages"
       @change="onChange('containerEngine.imageAllowList.patterns', $event)"
+      @type:item="onType($event)"
+      @errors="onDuplicate($event.duplicate)"
     />
   </div>
 </template>
@@ -107,4 +122,10 @@ export default Vue.extend({
     color: var(--warning);
   }
 
+</style>
+
+<style lang="scss">
+  .string-list .string-list-box .item .label {
+    white-space: nowrap;
+  }
 </style>

@@ -105,9 +105,9 @@ export function openMain(showPreferencesModal = false) {
       width:          940,
       height:         600,
       webPreferences: {
-        devTools:           !app.isPackaged,
-        nodeIntegration:    true,
-        contextIsolation:   false,
+        devTools:         !app.isPackaged,
+        nodeIntegration:  true,
+        contextIsolation: false,
       },
     });
 
@@ -231,6 +231,25 @@ export async function openDenyRootDialog() {
   }));
 }
 
+export type reqMessageId = 'ok' | 'linux-nested' | 'win32-release' | 'macOS-release';
+
+/**
+ * Open a dialog to show reason Desktop will not start
+ * @param reasonId Specifies which message to show in dialog
+ */
+export async function openUnmetPrerequisitesDialog(reasonId: reqMessageId) {
+  const window = openDialog('UnmetPrerequisites', { frame: true });
+
+  window.webContents.on('ipc-message', (event, channel) => {
+    if (channel === 'dialog/load') {
+      window.webContents.send('dialog/populate', reasonId);
+    }
+  });
+  await (new Promise<void>((resolve) => {
+    window.on('closed', resolve);
+  }));
+}
+
 /**
  * Open the error message window as a modal window.
  */
@@ -302,8 +321,8 @@ export async function openLegacyIntegrations(): Promise<void> {
   const window = openDialog(
     'LegacyIntegrationNotification',
     {
-      title:          'Rancher Desktop - Legacy Integrations',
-      parent:         getWindow('main') ?? undefined,
+      title:  'Rancher Desktop - Legacy Integrations',
+      parent: getWindow('main') ?? undefined,
     },
   );
 

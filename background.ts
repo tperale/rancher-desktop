@@ -7,6 +7,7 @@ import util from 'util';
 import Electron from 'electron';
 import _ from 'lodash';
 
+import BackendHelper from '@pkg/backend/backendHelper';
 import K8sFactory from '@pkg/backend/factory';
 import { getImageProcessor } from '@pkg/backend/images/imageFactory';
 import { ImageProcessor } from '@pkg/backend/images/imageProcessor';
@@ -29,31 +30,37 @@ import buildApplicationMenu from '@pkg/main/mainmenu';
 import setupNetworking from '@pkg/main/networking';
 import setupTray from '@pkg/main/tray';
 import setupUpdate from '@pkg/main/update';
-import * as childProcess from '@pkg/utils/childProcess';
 import getCommandLineArgs from '@pkg/utils/commandLine';
 import DockerDirManager from '@pkg/utils/dockerDirManager';
 import { arrayCustomizer } from '@pkg/utils/filters';
-import Logging, { setLogLevel } from '@pkg/utils/logging';
+import Logging, { setLogLevel, clearLoggingDirectory } from '@pkg/utils/logging';
 import paths from '@pkg/utils/paths';
 import { setupProtocolHandler, protocolRegistered } from '@pkg/utils/protocols';
 import { jsonStringifyWithWhiteSpace } from '@pkg/utils/stringify';
 import { RecursivePartial } from '@pkg/utils/typeUtils';
+import { getVersion } from '@pkg/utils/version';
 import * as window from '@pkg/window';
 import { closeDashboard, openDashboard } from '@pkg/window/dashboard';
 import { preferencesSetDirtyFlag } from '@pkg/window/preferences';
 
-Electron.app.setName('Rancher Desktop');
 Electron.app.setPath('cache', paths.cache);
 Electron.app.setAppLogsPath(paths.logs);
 
 const console = Logging.background;
+
+if (!Electron.app.requestSingleInstanceLock()) {
+  process.exit(201);
+}
+
+clearLoggingDirectory();
+
 const ipcMainProxy = getIpcMainProxy(console);
 const dockerDirManager = new DockerDirManager(path.join(os.homedir(), '.docker'));
 const k8smanager = newK8sManager();
 const diagnostics: DiagnosticsManager = new DiagnosticsManager();
 
 let cfg: settings.Settings;
-let waitForFirstRunDialogCompletion = true;
+let firstRunDialogComplete = false;
 let gone = false; // when true indicates app is shutting down
 let imageEventHandler: ImageEventHandler|null = null;
 let currentContainerEngine = settings.ContainerEngine.NONE;
@@ -77,11 +84,6 @@ let pendingRestartContext: CommandWorkerInterface.CommandContext | undefined;
 let httpCommandServer: HttpCommandServer|null = null;
 const httpCredentialHelperServer = new HttpCredentialHelperServer();
 
-if (!Electron.app.requestSingleInstanceLock()) {
-  gone = true;
-  process.exit(201);
-}
-
 // Scheme must be registered before the app is ready
 Electron.protocol.registerSchemesAsPrivileged([
   { scheme: 'app', privileges: { secure: true, standard: true } },
@@ -92,6 +94,14 @@ process.on('unhandledRejection', (reason: any, promise: any) => {
     // Do nothing: a connection to the kubernetes server was broken
   } else {
     console.error('UnhandledRejectionWarning:', reason);
+  }
+});
+
+Electron.app.on('second-instance', async() => {
+  await protocolRegistered;
+  console.warn('A second instance was started');
+  if (firstRunDialogComplete) {
+    window.openMain();
   }
 });
 
@@ -131,6 +141,8 @@ Electron.app.whenReady().then(async() => {
     if (['linux', 'darwin'].includes(os.platform())) {
       await checkForRootPrivs();
     }
+    // Check for required OS versions and features
+    await checkPrerequisites();
 
     DashboardServer.getInstance().init();
     httpCommandServer = new HttpCommandServer(new BackgroundCommandWorker());
@@ -232,12 +244,60 @@ async function doFirstRunDialog() {
   if (settings.firstRunDialogNeeded()) {
     await window.openFirstRunDialog();
   }
-  waitForFirstRunDialogCompletion = false;
+  firstRunDialogComplete = true;
 }
 
 async function checkForRootPrivs() {
   if (isRoot()) {
     await window.openDenyRootDialog();
+    gone = true;
+    Electron.app.quit();
+  }
+}
+
+async function checkPrerequisites() {
+  const osPlatform = os.platform();
+  let messageId: window.reqMessageId = 'ok';
+
+  switch (osPlatform) {
+  case 'win32': {
+    // Required: Windows 10-1909(build 18363) or newer
+    const winRel = os.release().split('.');
+
+    if (Number(winRel[0]) < 10 || (Number(winRel[0]) === 10 && Number(winRel[2]) < 18363)) {
+      messageId = 'win32-release';
+    }
+    break;
+  }
+  case 'linux': {
+    // Required: Nested virtualization enabled
+    const nestedFiles = [
+      '/sys/module/kvm_amd/parameters/nested',
+      '/sys/module/kvm_intel/parameters/nested'];
+
+    messageId = 'linux-nested';
+    for (const nestedFile of nestedFiles) {
+      try {
+        const data = await fs.promises.readFile(nestedFile, { encoding: 'utf8' });
+
+        if (data && data.toLowerCase()[0] === 'y' ) {
+          messageId = 'ok';
+          break;
+        }
+      } catch {}
+    }
+    break;
+  }
+  case 'darwin':
+    // Required: MacOS-10.15(Darwin-19) or newer
+    if (parseInt(os.release()) < 19) {
+      messageId = 'macOS-release';
+    }
+    break;
+  }
+
+  if (messageId !== 'ok') {
+    await window.openUnmetPrerequisitesDialog(messageId);
     gone = true;
     Electron.app.quit();
   }
@@ -312,13 +372,6 @@ function setupImageProcessor() {
   window.send('k8s-current-engine', cfg.kubernetes.containerEngine);
 }
 
-Electron.app.on('second-instance', async() => {
-  // Someone tried to run another instance of Rancher Desktop,
-  // reveal and focus this window instead.
-  await protocolRegistered;
-  window.openMain();
-});
-
 interface K8sError {
   errCode: number | string
 }
@@ -358,17 +411,12 @@ Electron.app.on('before-quit', async(event) => {
 Electron.app.on('window-all-closed', () => {
   // On macOS, hide the dock icon.
   Electron.app.dock?.hide();
-  // On windows and macOS platforms, we only quit via the notification tray / menu bar.
-  // On Linux we close the application since not all distros support tray menu/icons
-  if (os.platform() === 'linux' && !settings.firstRunDialogNeeded()) {
-    Electron.app.quit();
-  }
 });
 
 Electron.app.on('activate', async() => {
   // On macOS it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
-  if (waitForFirstRunDialogCompletion) {
+  if (!firstRunDialogComplete) {
     console.log('Still processing the first-run dialog: not opening main window');
 
     return;
@@ -554,12 +602,14 @@ ipcMainProxy.handle('service-fetch', (_, namespace) => {
 });
 
 ipcMainProxy.handle('service-forward', async(_, service, state) => {
+  const namespace = service.namespace ?? 'default';
+
   if (state) {
     const hostPort = service.listenPort ?? 0;
 
-    await k8smanager.kubeBackend.forwardPort(service.namespace, service.name, service.port, hostPort);
+    await k8smanager.kubeBackend.forwardPort(namespace, service.name, service.port, hostPort);
   } else {
-    await k8smanager.kubeBackend.cancelForward(service.namespace, service.name, service.port);
+    await k8smanager.kubeBackend.cancelForward(namespace, service.name, service.port);
   }
 });
 
@@ -602,7 +652,7 @@ ipcMainProxy.on('factory-reset', (event, keepSystemImages) => {
   doFactoryReset(keepSystemImages);
 });
 
-ipcMainProxy.on('troubleshooting/show-logs', async(event) => {
+ipcMainProxy.on('show-logs', async(event) => {
   const error = await Electron.shell.openPath(paths.logs);
 
   if (error) {
@@ -675,32 +725,6 @@ Electron.ipcMain.handle('show-message-box-rd', async(_event, options: Electron.M
 
   return response;
 });
-
-function getProductionVersion() {
-  try {
-    return Electron.app.getVersion();
-  } catch (err) {
-    console.log(`Can't get app version: ${ err }`);
-
-    return '?';
-  }
-}
-
-async function getDevVersion() {
-  try {
-    const { stdout } = await childProcess.spawnFile('git', ['describe', '--tags'], { stdio: ['ignore', 'pipe', 'inherit'] });
-
-    return stdout.trim();
-  } catch (err) {
-    console.log(`Can't get app version: ${ err }`);
-
-    return '?';
-  }
-}
-
-async function getVersion() {
-  return process.env.NODE_ENV === 'production' ? getProductionVersion() : await getDevVersion();
-}
 
 function showErrorDialog(title: string, message: string, fatal?: boolean) {
   Electron.dialog.showErrorBox(title, message);
@@ -898,6 +922,13 @@ class BackgroundCommandWorker implements CommandWorkerInterface {
       // Obviously if there are no settings to update, there's no need to restart.
       return ['no changes necessary', ''];
     }
+
+    // Update image allow list patterns, just in case the backend doesn't need restarting
+    const allowListConf = BackendHelper.createImageAllowListConf(cfg.containerEngine.imageAllowList);
+    const rcService = k8smanager.backend === 'wsl' ? 'wsl-service' : 'rc-service';
+
+    await k8smanager.executor.writeFile(`/usr/local/openresty/nginx/conf/image-allow-list.conf`, allowListConf, 0o644);
+    await k8smanager.executor.execCommand({ root: true }, rcService, '--ifstarted', 'openresty', 'reload');
 
     // Check if the newly applied preferences demands a restart of the backend.
     const restartReasons = await k8smanager.requiresRestartReasons(cfg);

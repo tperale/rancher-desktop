@@ -74,8 +74,8 @@ export const defaultSettings = {
     },
     WSLProxy: { address: '', port: 3128 },
   },
-  portForwarding:  { includeKubernetesServices: false },
-  images:          {
+  portForwarding: { includeKubernetesServices: false },
+  images:         {
     showAll:   true,
     namespace: 'k8s.io',
   },
