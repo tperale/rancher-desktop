@@ -1059,7 +1059,7 @@ export default class WSLBackend extends events.EventEmitter implements VMBackend
     }
   }
 
-  async writeProxySettings(proxy): Promise<void> {
+  async writeProxySettings(proxy: any): Promise<void> {
     const address = `${proxy.address}:${proxy.port}`
     const contents = `HTTP_PROXY=${address}\nHTTPS_PROXY=${address}`;
     await this.writeFile(`/etc/profile`, contents);
@@ -1067,8 +1067,8 @@ export default class WSLBackend extends events.EventEmitter implements VMBackend
     const docker_config = await this.readFile(`~/.docker/config.json`);
     const docker_content = JSON.parse(docker_config ? docker_config : "{}")
     if (docker_content) {
-      docker_content!.default.httpProxy = adress;
-      docker_content!.default.httpsProxy = adress;
+      docker_content!.default.httpProxy = address;
+      docker_content!.default.httpsProxy = address;
     }
     await this.writeFile(`~/.docker/config.json`, JSON.stringify(docker_content));
 
