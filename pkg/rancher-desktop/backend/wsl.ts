@@ -708,6 +708,24 @@ export default class WSLBackend extends events.EventEmitter implements VMBackend
     }
   }
 
+  protected async writeProxySettings(proxy: any): Promise<void> {
+    if (proxy.address && proxy.port) {
+      const address = `${proxy.address}:${proxy.port}`
+      const contents = `HTTP_PROXY=${address}\nHTTPS_PROXY=${address}`;
+      await this.writeFile(`/etc/profile`, contents);
+
+      const docker_content = JSON.parse(await this.captureCommand('cat', ROOT_DOCKER_CONFIG_PATH));
+      if (docker_content) {
+        docker_content!.default.httpProxy = address;
+        docker_content!.default.httpsProxy = address;
+      }
+      await this.writeFile(ROOT_DOCKER_CONFIG_PATH, jsonStringifyWithWhiteSpace(docker_content), 0o644);
+
+      this.startService("docker")
+      this.stopService("docker")
+    }
+  }
+
   /**
    * handleUpgrade removes all the left over files that
    * were renamed in between releases.
@@ -1072,23 +1090,6 @@ export default class WSLBackend extends events.EventEmitter implements VMBackend
       }
       await util.promisify(setTimeout)(waitTime);
     }
-  }
-
-  async writeProxySettings(proxy: any): Promise<void> {
-    const address = `${proxy.address}:${proxy.port}`
-    const contents = `HTTP_PROXY=${address}\nHTTPS_PROXY=${address}`;
-    await this.writeFile(`/etc/profile`, contents);
-
-    const docker_config = await this.readFile(`~/.docker/config.json`);
-    const docker_content = JSON.parse(docker_config ? docker_config : "{}")
-    if (docker_content) {
-      docker_content!.default.httpProxy = address;
-      docker_content!.default.httpsProxy = address;
-    }
-    await this.writeFile(`~/.docker/config.json`, JSON.stringify(docker_content));
-
-    this.startService("docker")
-    this.stopService("docker")
   }
 
   async start(config_: BackendSettings): Promise<void> {
