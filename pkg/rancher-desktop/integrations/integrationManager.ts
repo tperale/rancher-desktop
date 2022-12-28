@@ -51,6 +51,7 @@ export function getIntegrationManager(): IntegrationManager {
   case 'darwin':
     return new UnixIntegrationManager(resourcesBinDir, paths.integration, dockerCliPluginDir);
   case 'win32':
+    return new WindowsIntegrationManager();
   default:
     throw new Error(`OS ${ platform } is not supported`);
   }
