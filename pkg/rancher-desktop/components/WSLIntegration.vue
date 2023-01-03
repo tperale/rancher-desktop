@@ -24,14 +24,15 @@
 </template>
 
 <script lang="ts">
-import { mapGetters } from 'vuex';
-
 import { Banner, Card, Checkbox } from '@rancher/components';
-import RdFieldset from '@pkg/components/form/RdFieldset.vue';
-import { RecursiveTypes } from '@pkg/utils/typeUtils';
-import { Settings } from '@pkg/config/settings';
 import Vue from 'vue';
 import Component from 'vue-class-component';
+import { mapGetters } from 'vuex';
+
+import RdFieldset from '@pkg/components/form/RdFieldset.vue';
+import { Settings } from '@pkg/config/settings';
+import { RecursiveTypes } from '@pkg/utils/typeUtils';
+
 import type { PropType } from 'vue';
 
 const WSLIntegrationProps = Vue.extend({
@@ -55,7 +56,7 @@ const WSLIntegrationProps = Vue.extend({
 
 @Component({
   components: {
-    Banner, Card, Checkbox, RdFieldset
+    Banner, Card, Checkbox, RdFieldset,
   },
 })
 class WSLIntegration extends WSLIntegrationProps {
@@ -90,6 +91,7 @@ class WSLIntegration extends WSLIntegrationProps {
 
   toggleIntegration(distro: string, value: boolean) {
     const property: keyof RecursiveTypes<Settings> = `kubernetes.WSLIntegrations["${ distro }"]` as any;
+
     this.$set(this.busy, distro, value);
     this.$store.dispatch('preferences/updateWslIntegrations', { distribution: `["${ distro }"]`, value });
     this.$store.dispatch('preferences/updatePreferencesData', { property, value });

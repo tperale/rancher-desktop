@@ -72,7 +72,9 @@ export const defaultSettings = {
       /** macOS only: if set, use socket_vmnet instead of vde_vmnet. */
       socketVMNet: false,
     },
-    WSLProxy: { address: '', port: 3128 },
+    WSLProxy: {
+      address: '', port: 3128, username: '', password: '',
+    },
   },
   portForwarding: { includeKubernetesServices: false },
   images:         {

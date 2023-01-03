@@ -77,9 +77,11 @@ export default class SettingsValidator {
         suppressSudo:               this.checkLima(this.checkBoolean),
         hostResolver:               this.checkPlatform('win32', this.checkBoolean),
         experimental:               { socketVMNet: this.checkPlatform('darwin', this.checkBoolean) },
-        WSLProxy: { 
-          address: this.checkString, 
-          port: this.checkNumber(1, 65535),
+        WSLProxy:                   {
+          address:  this.checkString,
+          port:     this.checkNumber(1, 65535),
+          username: this.checkString,
+          password: this.checkString,
         },
       },
       portForwarding: { includeKubernetesServices: this.checkBoolean },

@@ -4664,8 +4664,12 @@ proxy:
   windows:
     title: WSL Proxy
     description: "Configure the proxy used by the Windows Subsystem for Linux (WSL) distros"
-    address: "Proxy address"
-    port: "Proxy port"
+    addressTitle: "Proxy address"
+    address: "Address"
+    port: "Port"
+    authTitle: "Authentication informations"
+    username: "Username"
+    password: "Password"
 
 ##############################
 ### Support Page
