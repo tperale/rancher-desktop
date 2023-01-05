@@ -710,19 +710,21 @@ export default class WSLBackend extends events.EventEmitter implements VMBackend
 
   protected async writeProxySettings(proxy: any): Promise<void> {
     if (proxy.address && proxy.port) {
-      const address = `${proxy.address}:${proxy.port}`
-      const contents = `HTTP_PROXY=${address}\nHTTPS_PROXY=${address}`;
+      const address = `${ proxy.address }:${ proxy.port }`;
+      const contents = `HTTP_PROXY=${ address }\nHTTPS_PROXY=${ address }\n`;
+
       await this.writeFile(`/etc/profile`, contents);
 
-      const docker_content = JSON.parse(await this.captureCommand('cat', ROOT_DOCKER_CONFIG_PATH));
-      if (docker_content) {
-        docker_content!.default.httpProxy = address;
-        docker_content!.default.httpsProxy = address;
-      }
-      await this.writeFile(ROOT_DOCKER_CONFIG_PATH, jsonStringifyWithWhiteSpace(docker_content), 0o644);
+      const dockerContent = JSON.parse(await this.captureCommand('cat', ROOT_DOCKER_CONFIG_PATH));
 
-      this.startService("docker")
-      this.stopService("docker")
+      if (dockerContent) {
+        dockerContent!.default.httpProxy = address;
+        dockerContent!.default.httpsProxy = address;
+      }
+      await this.writeFile(ROOT_DOCKER_CONFIG_PATH, jsonStringifyWithWhiteSpace(dockerContent), 0o644);
+
+      this.startService('docker');
+      this.stopService('docker')
     }
   }
 
