@@ -710,8 +710,9 @@ export default class WSLBackend extends events.EventEmitter implements VMBackend
 
   protected async writeProxySettings(proxy: any): Promise<void> {
     if (proxy.address && proxy.port) {
+      const auth = proxy.username ? `${proxy.username}:${proxy.password}@` : '';
       const address = `${ proxy.address }:${ proxy.port }`;
-      const contents = `HTTP_PROXY=${ address }\nHTTPS_PROXY=${ address }\n`;
+      const contents = `HTTP_PROXY=${auth}${ address }\nHTTPS_PROXY=${auth}${ address }`;
 
       await this.writeFile(`/etc/profile`, contents);
 
@@ -724,7 +725,7 @@ export default class WSLBackend extends events.EventEmitter implements VMBackend
       await this.writeFile(ROOT_DOCKER_CONFIG_PATH, jsonStringifyWithWhiteSpace(dockerContent), 0o644);
 
       this.startService('docker');
-      this.stopService('docker')
+      this.stopService('docker');
     }
   }
 
@@ -1149,7 +1150,7 @@ export default class WSLBackend extends events.EventEmitter implements VMBackend
                 await this.installCredentialHelper();
               }),
               this.progressTracker.action('Proxy Setup', 50, async() => {
-                this.writeProxySettings(config.kubernetes.WSLProxy);
+                await this.writeProxySettings(config.kubernetes.WSLProxy);
               }),
               this.progressTracker.action('DNS configuration', 50, async() => {
                 await this.writeFile('/etc/init.d/host-resolver', SERVICE_SCRIPT_HOST_RESOLVER, 0o755);

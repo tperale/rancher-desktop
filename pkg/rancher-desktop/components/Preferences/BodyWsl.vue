@@ -1,24 +1,25 @@
 <script lang="ts">
 
 import Vue from 'vue';
-
 import { mapGetters, mapState } from 'vuex';
-import { TransientSettings } from '@pkg/config/transientSettings';
-import { RecursivePartial } from '@pkg/utils/typeUtils';
 
-import WslIntegration from '@pkg/components/WSLIntegration.vue';
-import WslProxy from '@pkg/components/WSLProxy.vue';
 import RdTabbed from '@pkg/components/Tabbed/RdTabbed.vue';
 import Tab from '@pkg/components/Tabbed/Tab.vue';
+import WslIntegration from '@pkg/components/WSLIntegration.vue';
+import WslProxy from '@pkg/components/WSLProxy.vue';
 import { Settings } from '@pkg/config/settings';
+import { TransientSettings } from '@pkg/config/transientSettings';
 import { ServerState } from '@pkg/main/credentialServer/httpCredentialHelperServer';
+import { RecursivePartial } from '@pkg/utils/typeUtils';
 
 import type { PropType } from 'vue';
 
 export default Vue.extend({
   name:       'preferences-body-wsl',
-  components: { WslIntegration, WslProxy, RdTabbed, Tab, },
-  props:      {
+  components: {
+    WslIntegration, WslProxy, RdTabbed, Tab,
+  },
+  props: {
     preferences: {
       type:     Object as PropType<Settings>,
       required: true,
@@ -43,7 +44,7 @@ export default Vue.extend({
         'transientSettings/commitPreferences',
         {
           ...this.credentials as ServerState,
-          payload: { preferences: { navItem: { currentTabs: { 'WSL': tabName } } } } as RecursivePartial<TransientSettings>,
+          payload: { preferences: { navItem: { currentTabs: { WSL: tabName } } } } as RecursivePartial<TransientSettings>,
         },
       );
     },
