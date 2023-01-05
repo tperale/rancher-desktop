@@ -4670,6 +4670,8 @@ proxy:
     authTitle: "Authentication informations"
     username: "Username"
     password: "Password"
+    noProxyTitle: "Set the NOPROXY variable to don't use the proxy for certain domains"
+    noProxy: "NOPROXY"
 
 ##############################
 ### Support Page

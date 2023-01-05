@@ -39,9 +39,10 @@ describe('updateFromCommandLine', () => {
         experimental: { socketVMNet: true },
         WSLProxy:     {
           address:  '',
+          noProxy:  '',
+          password: '',
           port:     3128,
           username: '',
-          password: '',
         },
       },
       portForwarding: { includeKubernetesServices: false },

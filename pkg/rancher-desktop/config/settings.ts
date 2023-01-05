@@ -73,7 +73,7 @@ export const defaultSettings = {
       socketVMNet: false,
     },
     WSLProxy: {
-      address: '', port: 3128, username: '', password: '',
+      address: '', noProxy: '', password: '', port: 3128, username: '',
     },
   },
   portForwarding: { includeKubernetesServices: false },

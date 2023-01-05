@@ -84,6 +84,18 @@ export default Vue.extend({
             />
           </rd-fieldset>
         </rd-fieldset>
+        <rd-fieldset
+          :legend-text="t('proxy.windows.noProxyTitle', { }, true)"
+        >
+          <rd-fieldset>
+            <input
+              :placeholder="t('proxy.windows.noProxy', { }, true)"
+              :disabled="isProxyDisabled"
+              :value="preferences.kubernetes.WSLProxy.noProxy"
+              @input="onChange('kubernetes.WSLProxy.noProxy', $event.target.value)"
+            />
+          </rd-fieldset>
+        </rd-fieldset>
       </section>
     </rd-fieldset>
   </div>

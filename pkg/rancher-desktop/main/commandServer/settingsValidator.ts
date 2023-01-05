@@ -79,9 +79,10 @@ export default class SettingsValidator {
         experimental:               { socketVMNet: this.checkPlatform('darwin', this.checkBoolean) },
         WSLProxy:                   {
           address:  this.checkString,
+          noProxy:  this.checkString,
+          password: this.checkString,
           port:     this.checkNumber(1, 65535),
           username: this.checkString,
-          password: this.checkString,
         },
       },
       portForwarding: { includeKubernetesServices: this.checkBoolean },

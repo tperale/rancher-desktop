@@ -273,11 +273,13 @@ components:
               properties:
                 address:
                   type: string
+                noProxy:
+                  type: string
+                password:
+                  type: string
                 port:
                   type: integer
                 username:
-                  type: string
-                password:
                   type: string
             options:
               type: object
