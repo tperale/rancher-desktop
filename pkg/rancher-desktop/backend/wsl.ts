@@ -710,9 +710,9 @@ export default class WSLBackend extends events.EventEmitter implements VMBackend
 
   protected async writeProxySettings(proxy: any): Promise<void> {
     if (proxy.address && proxy.port) {
-      const auth = proxy.username ? `${proxy.username}:${proxy.password}@` : '';
+      const auth = proxy.username ? `${ proxy.username }:${ proxy.password }@` : '';
       const address = `${ proxy.address }:${ proxy.port }`;
-      const contents = `HTTP_PROXY=${auth}${ address }\nHTTPS_PROXY=${auth}${ address }`;
+      const contents = `HTTP_PROXY=${ auth }${ address }\nHTTPS_PROXY=${ auth }${ address }`;
 
       await this.writeFile(`/etc/profile`, contents);
 
