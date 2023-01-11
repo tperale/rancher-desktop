@@ -712,7 +712,7 @@ export default class WSLBackend extends events.EventEmitter implements VMBackend
     if (proxy.address && proxy.port) {
       const auth = proxy.username ? `${ proxy.username }:${ proxy.password }@` : '';
       const address = `${ proxy.address }:${ proxy.port }`;
-      const contents = `HTTP_PROXY=${ auth }${ address }\nHTTPS_PROXY=${ auth }${ address }`;
+      const contents = `http_proxy=${ auth }${ address }\nhttps_proxy=${ auth }${ address }`;
 
       await this.writeFile(`/etc/profile`, contents);
 
