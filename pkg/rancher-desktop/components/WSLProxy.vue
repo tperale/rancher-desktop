@@ -1,4 +1,5 @@
 <script lang="ts">
+import { Checkbox } from '@rancher/components';
 import Vue from 'vue';
 
 import RdFieldset from '@pkg/components/form/RdFieldset.vue';
@@ -10,7 +11,7 @@ import type { PropType } from 'vue';
 export default Vue.extend({
   name: 'wsl-proxy',
 
-  components: { RdFieldset },
+  components: { Checkbox, RdFieldset },
 
   props: {
     description: {
@@ -29,6 +30,7 @@ export default Vue.extend({
 
   methods: {
     onChange<P extends keyof RecursiveTypes<Settings>>(property: P, value: RecursiveTypes<Settings>[P]) {
+      console.log(value)
       this.$store.dispatch('preferences/updatePreferencesData', { property, value });
     },
   },
@@ -37,18 +39,23 @@ export default Vue.extend({
 
 <template>
   <div class="preferences-body">
-    <rd-fieldset
-      :legend-text="t('proxy.windows.description', { }, true)"
-    >
+    <rd-fieldset>
       <section class="wsl-proxy">
-        <h3 v-if="description" v-text="description" />
+        <rd-fieldset>
+          <checkbox
+            :label="t('proxy.windows.description', { }, true)"
+            :value="preferences.kubernetes.WSLProxy.enabled"
+            @input="onChange('kubernetes.WSLProxy.enabled', $event)"
+          />
+        </rd-fieldset>
+        <hr>
         <rd-fieldset
           :legend-text="t('proxy.windows.addressTitle', { }, true)"
         >
           <rd-fieldset>
             <input
               :placeholder="t('proxy.windows.address', { }, true)"
-              :disabled="isProxyDisabled"
+              :disabled="!preferences.kubernetes.WSLProxy.enabled"
               :value="preferences.kubernetes.WSLProxy.address"
               @input="onChange('kubernetes.WSLProxy.address', $event.target.value)"
             />
@@ -57,7 +64,7 @@ export default Vue.extend({
             <input
               type="number"
               :placeholder="t('proxy.windows.port', { }, true)"
-              :disabled="isProxyDisabled"
+              :disabled="!preferences.kubernetes.WSLProxy.enabled"
               :value="preferences.kubernetes.WSLProxy.port"
               @input="onChange('kubernetes.WSLProxy.port', $event.target.value)"
             />
@@ -69,7 +76,7 @@ export default Vue.extend({
           <rd-fieldset>
             <input
               :placeholder="t('proxy.windows.username', { }, true)"
-              :disabled="isProxyDisabled"
+              :disabled="!preferences.kubernetes.WSLProxy.enabled"
               :value="preferences.kubernetes.WSLProxy.username"
               @input="onChange('kubernetes.WSLProxy.username', $event.target.value)"
             />
@@ -78,7 +85,7 @@ export default Vue.extend({
             <input
               type="password"
               :placeholder="t('proxy.windows.password', { }, true)"
-              :disabled="isProxyDisabled"
+              :disabled="!preferences.kubernetes.WSLProxy.enabled"
               :value="preferences.kubernetes.WSLProxy.password"
               @input="onChange('kubernetes.WSLProxy.password', $event.target.value)"
             />
@@ -90,7 +97,7 @@ export default Vue.extend({
           <rd-fieldset>
             <input
               :placeholder="t('proxy.windows.noProxy', { }, true)"
-              :disabled="isProxyDisabled"
+              :disabled="!preferences.kubernetes.WSLProxy.enabled"
               :value="preferences.kubernetes.WSLProxy.noProxy"
               @input="onChange('kubernetes.WSLProxy.noProxy', $event.target.value)"
             />

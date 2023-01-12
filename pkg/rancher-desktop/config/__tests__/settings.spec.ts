@@ -38,6 +38,7 @@ describe('updateFromCommandLine', () => {
         hostResolver: true,
         experimental: { socketVMNet: true },
         WSLProxy:     {
+          enabled:  false,
           address:  '',
           noProxy:  '',
           password: '',

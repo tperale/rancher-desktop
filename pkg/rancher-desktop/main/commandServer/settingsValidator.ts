@@ -78,6 +78,7 @@ export default class SettingsValidator {
         hostResolver:               this.checkPlatform('win32', this.checkBoolean),
         experimental:               { socketVMNet: this.checkPlatform('darwin', this.checkBoolean) },
         WSLProxy:                   {
+          enabled:  this.checkBoolean,
           address:  this.checkString,
           noProxy:  this.checkString,
           password: this.checkString,

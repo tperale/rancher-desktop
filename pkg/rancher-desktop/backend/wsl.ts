@@ -709,7 +709,7 @@ export default class WSLBackend extends events.EventEmitter implements VMBackend
   }
 
   protected async writeProxySettings(proxy: any): Promise<void> {
-    if (proxy.address && proxy.port) {
+    if (proxy.enabled && proxy.address && proxy.port) {
       const auth = proxy.username ? `${ proxy.username }:${ proxy.password }@` : '';
       const address = `${ proxy.address }:${ proxy.port }`;
       const contents = `http_proxy=${ auth }${ address }\nhttps_proxy=${ auth }${ address }`;
@@ -729,7 +729,10 @@ export default class WSLBackend extends events.EventEmitter implements VMBackend
 
       this.startService('docker');
       this.stopService('docker');
+    } else {
+      // TODO Verify the settings are correctly unset everywhere
     }
+
   }
 
   /**
