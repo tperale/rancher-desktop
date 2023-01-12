@@ -715,6 +715,7 @@ export default class WSLBackend extends events.EventEmitter implements VMBackend
       const contents = `http_proxy=${ auth }${ address }\nhttps_proxy=${ auth }${ address }`;
 
       await this.writeFile(`/etc/profile`, contents);
+      await this.execCommand('source', '/etc/profile');
 
       const dockerContent = JSON.parse(await this.captureCommand('cat', ROOT_DOCKER_CONFIG_PATH));
 
