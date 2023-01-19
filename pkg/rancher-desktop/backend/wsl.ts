@@ -708,33 +708,38 @@ export default class WSLBackend extends events.EventEmitter implements VMBackend
     }
   }
 
+  protected async writeDockerProxySettings(address: string | null, noProxy: string | null): Promise<void> {
+    const dockerConfigContent = await this.captureCommand('cat', ROOT_DOCKER_CONFIG_PATH) || '{}'
+    const dockerConfig = JSON.parse(dockerConfigContent);
+
+    dockerConfig.proxies = {};
+    if (address) {
+      dockerConfig.proxies.default = {
+        httpProxy:  address,
+        httpsProxy: address,
+      };
+      if (noProxy) {
+        dockerConfig.proxies.noProxy = noProxy;
+      }
+    }
+    await this.writeFile(ROOT_DOCKER_CONFIG_PATH, jsonStringifyWithWhiteSpace(dockerConfig), 0o644);
+
+    this.startService('docker');
+    this.stopService('docker');
+  }
+
   protected async writeProxySettings(proxy: any): Promise<void> {
     if (proxy.enabled && proxy.address && proxy.port) {
       const auth = proxy.username ? `${ proxy.username }:${ proxy.password }@` : '';
-      const address = `${ proxy.address }:${ proxy.port }`;
-      const contents = `http_proxy=${ auth }${ address }\nhttps_proxy=${ auth }${ address }`;
+      const address = `${auth}${ proxy.address }:${ proxy.port }`;
+      const contents = `http_proxy=${ address }\nhttps_proxy=${ address }\nno_proxy=${ proxy.noProxy }\n`;
 
-      await this.writeFile(`/etc/environment`, contents);
+      await this.writeFile(`/etc/environment`, `${ contents }${ contents.toUpperCase() }`);
 
-      const dockerContent = JSON.parse(await this.captureCommand('cat', ROOT_DOCKER_CONFIG_PATH));
-
-      if (dockerContent) {
-        if (dockerContent.proxies === undefined) {
-          dockerContent.proxies = {};
-        }
-        dockerContent.proxies.default = {
-          httpProxy:  address,
-          httpsProxy: address,
-        };
-      }
-      await this.writeFile(ROOT_DOCKER_CONFIG_PATH, jsonStringifyWithWhiteSpace(dockerContent), 0o644);
-
-      this.startService('docker');
-      this.stopService('docker');
+      this.writeDockerProxySettings(address, proxy.noProxy);
     } else {
-      // TODO Verify the settings are correctly unset everywhere
+      this.writeDockerProxySettings(null, null);
     }
-
   }
 
   /**
