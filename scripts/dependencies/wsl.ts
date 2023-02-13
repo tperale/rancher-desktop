@@ -72,7 +72,7 @@ export class HostResolverHost extends GithubVersionGetter implements Dependency,
 
 export class WSLDistro extends GithubVersionGetter implements Dependency, UnreleasedChangeMonitor {
   name = 'WSLDistro';
-  githubOwner = 'rancher-sandbox';
+  githubOwner = 'tperale';
   githubRepo = 'rancher-desktop-wsl-distro';
 
   async download(context: DownloadContext): Promise<void> {

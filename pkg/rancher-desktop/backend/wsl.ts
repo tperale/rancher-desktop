@@ -708,37 +708,20 @@ export default class WSLBackend extends events.EventEmitter implements VMBackend
     }
   }
 
-  protected async writeDockerProxySettings(address: string | null, noProxy: string | null): Promise<void> {
-    const dockerConfigContent = await this.captureCommand('cat', ROOT_DOCKER_CONFIG_PATH) || '{}';
-    const dockerConfig = JSON.parse(dockerConfigContent);
-
-    dockerConfig.proxies = {};
-    if (address) {
-      dockerConfig.proxies.default = {
-        httpProxy:  address,
-        httpsProxy: address,
-      };
-      if (noProxy) {
-        dockerConfig.proxies.noProxy = noProxy;
-      }
-    }
-    await this.writeFile(ROOT_DOCKER_CONFIG_PATH, jsonStringifyWithWhiteSpace(dockerConfig), 0o644);
-
-    this.startService('docker');
-    this.stopService('docker');
-  }
-
   protected async writeProxySettings(proxy: any): Promise<void> {
     if (proxy.enabled && proxy.address && proxy.port) {
-      const auth = proxy.username ? `${ proxy.username }:${ proxy.password }@` : '';
-      const address = `${ auth }${ proxy.address }:${ proxy.port }`;
-      const contents = `http_proxy=${ address }\nhttps_proxy=${ address }\nno_proxy=${ proxy.noProxy }\n`;
+      // Write to /etc/moproxy/proxy.ini
+      const address = `${ proxy.address }:${ proxy.port }`;
+      // const auth = proxy.username ? `${ proxy.username }:${ proxy.password }@` : '';
+      // const address = `${ auth }${ proxy.address }:${ proxy.port }`;
+      const contents = `[rancher-desktop-proxy]\naddress=${ address }\nprotocol=http\n`;
 
-      await this.writeFile(`/etc/environment`, `${ contents }${ contents.toUpperCase() }`);
+      await this.writeFile(`/etc/moproxy/proxy.ini`, `${ contents }`);
 
-      this.writeDockerProxySettings(address, proxy.noProxy);
+      this.execService('moproxy', 'reload');
+      this.execService('moproxy', 'enable');
     } else {
-      this.writeDockerProxySettings(null, null);
+      this.execService('moproxy', 'disable');
     }
   }
 
@@ -1062,15 +1045,27 @@ export default class WSLBackend extends events.EventEmitter implements VMBackend
   }
 
   /**
+   * Execute a command on a given OpenRC service.
+   *
+   * @param service The name of the OpenRC service to execute.
+   * @param action The name of the OpenRC service action to execute.
+   * @param update Whether or not to run `rc-update` before executing the service command.
+   */
+  async execService(service: string, action: string, update = false) {
+    if (update) {
+      await this.execCommand('/sbin/rc-update', '--update');
+    }
+    await this.execCommand('/usr/local/bin/wsl-service', service, action);
+  }
+
+  /**
    * Start the given OpenRC service.  This should only happen after
    * provisioning, to ensure that provisioning can modify any configuration.
    *
    * @param service The name of the OpenRC service to execute.
    */
   async startService(service: string) {
-    // Run rc-update as we have dynamic dependencies.
-    await this.execCommand('/sbin/rc-update', '--update');
-    await this.execCommand('/usr/local/bin/wsl-service', service, 'start');
+    await this.execService(service, 'start', true);
   }
 
   /**
@@ -1079,7 +1074,7 @@ export default class WSLBackend extends events.EventEmitter implements VMBackend
    * @param service The name of the OpenRC service to stop.
    */
   async stopService(service: string) {
-    await this.execCommand('/usr/local/bin/wsl-service', service, 'stop');
+    await this.execService(service, 'stop');
   }
 
   /**
@@ -1162,9 +1157,6 @@ export default class WSLBackend extends events.EventEmitter implements VMBackend
                 // This must run after /etc/rancher is mounted
                 await this.installCredentialHelper();
               }),
-              this.progressTracker.action('Proxy Setup', 50, async() => {
-                await this.writeProxySettings(config.kubernetes.WSLProxy);
-              }),
               this.progressTracker.action('DNS configuration', 50, async() => {
                 await this.writeFile('/etc/init.d/host-resolver', SERVICE_SCRIPT_HOST_RESOLVER, 0o755);
                 await this.writeFile('/etc/init.d/dnsmasq-generate', SERVICE_SCRIPT_DNSMASQ_GENERATE, 0o755);
@@ -1192,6 +1184,10 @@ export default class WSLBackend extends events.EventEmitter implements VMBackend
                 } else {
                   await this.execCommand('/sbin/rc-update', 'del', 'host-resolver', 'default');
                 }
+              }),
+              this.progressTracker.action('Proxy Setup', 50, async() => {
+                await this.startService('moproxy');
+                await this.writeProxySettings(config.kubernetes.WSLProxy);
               }),
               this.progressTracker.action('Kubernetes dockerd compatibility', 50, async() => {
                 await this.writeFile('/etc/init.d/cri-dockerd', SERVICE_SCRIPT_CRI_DOCKERD, 0o755);
