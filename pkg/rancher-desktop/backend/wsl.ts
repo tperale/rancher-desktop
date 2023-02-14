@@ -718,7 +718,7 @@ export default class WSLBackend extends events.EventEmitter implements VMBackend
 
       await this.writeFile(`/etc/moproxy/proxy.ini`, `${ contents }`);
     } else {
-      await this.writeFile(`/etc/moproxy/proxy.ini`, '');
+      await this.writeFile(`/etc/moproxy/proxy.ini`, '; no proxy');
     }
   }
 
