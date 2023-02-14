@@ -709,7 +709,7 @@ export default class WSLBackend extends events.EventEmitter implements VMBackend
   }
 
   protected async writeProxySettings(proxy: any): Promise<void> {
-    if (proxy.enabled && proxy.address && proxy.port) {
+    if (proxy.address && proxy.port) {
       // Write to /etc/moproxy/proxy.ini
       const address = `${ proxy.address }:${ proxy.port }`;
       // const auth = proxy.username ? `${ proxy.username }:${ proxy.password }@` : '';
@@ -717,11 +717,8 @@ export default class WSLBackend extends events.EventEmitter implements VMBackend
       const contents = `[rancher-desktop-proxy]\naddress=${ address }\nprotocol=http\n`;
 
       await this.writeFile(`/etc/moproxy/proxy.ini`, `${ contents }`);
-
-      this.execService('moproxy', 'reload');
-      this.execService('moproxy', 'enable');
     } else {
-      this.execService('moproxy', 'disable');
+      await this.writeFile(`/etc/moproxy/proxy.ini`, '');
     }
   }
 
@@ -1185,10 +1182,6 @@ export default class WSLBackend extends events.EventEmitter implements VMBackend
                   await this.execCommand('/sbin/rc-update', 'del', 'host-resolver', 'default');
                 }
               }),
-              this.progressTracker.action('Proxy Setup', 50, async() => {
-                await this.startService('moproxy');
-                await this.writeProxySettings(config.kubernetes.WSLProxy);
-              }),
               this.progressTracker.action('Kubernetes dockerd compatibility', 50, async() => {
                 await this.writeFile('/etc/init.d/cri-dockerd', SERVICE_SCRIPT_CRI_DOCKERD, 0o755);
                 await this.writeConf('cri-dockerd', {
@@ -1215,6 +1208,9 @@ export default class WSLBackend extends events.EventEmitter implements VMBackend
                 });
                 await this.writeFile(`/etc/init.d/buildkitd`, SERVICE_BUILDKITD_INIT, 0o755);
                 await this.writeFile(`/etc/conf.d/buildkitd`, SERVICE_BUILDKITD_CONF);
+              }),
+              this.progressTracker.action('Proxy Config Setup', 50, async() => {
+                await this.writeProxySettings(config.kubernetes.WSLProxy);
               }),
               this.progressTracker.action('Configuring image proxy', 50, async() => {
                 const imageAllowListConf = '/usr/local/openresty/nginx/conf/image-allow-list.conf';
@@ -1275,6 +1271,8 @@ export default class WSLBackend extends events.EventEmitter implements VMBackend
         }
 
         await this.progressTracker.action('Running provisioning scripts', 100, this.runProvisioningScripts());
+
+        await this.progressTracker.action('Starting moproxy', 100, this.startService('moproxy'));
         if (config.containerEngine.imageAllowList.enabled) {
           await this.progressTracker.action('Starting image proxy', 100, this.startService('openresty'));
         }
