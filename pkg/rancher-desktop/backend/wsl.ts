@@ -1273,7 +1273,7 @@ export default class WSLBackend extends events.EventEmitter implements VMBackend
         await this.progressTracker.action('Running provisioning scripts', 100, this.runProvisioningScripts());
 
         if (config.kubernetes.WSLProxy.enabled && config.kubernetes.WSLProxy.address && config.kubernetes.WSLProxy.port) {
-          await this.progressTracker.action('Starting proxy', 100, this.startService('--ifnotstarted moproxy'));
+          await this.progressTracker.action('Starting proxy', 100, this.execCommand('/usr/local/bin/wsl-service', '--ifnotstarted', 'moproxy', 'start'));
         }
         if (config.containerEngine.imageAllowList.enabled) {
           await this.progressTracker.action('Starting image proxy', 100, this.startService('openresty'));
@@ -1480,10 +1480,10 @@ export default class WSLBackend extends events.EventEmitter implements VMBackend
     if (proxy) {
       this.writeProxySettings(proxy);
       if (proxy.enabled && proxy.address && proxy.port) {
-        await this.execService('--ifstarted moproxy', 'reload');
-        await this.startService('--ifnotstarted moproxy');
+        await this.execCommand('/usr/local/bin/wsl-service', '--ifstarted', 'moproxy', 'reload');
+        await this.execCommand('/usr/local/bin/wsl-service', '--ifnotstarted', 'moproxy', 'start');
       } else {
-        await this.stopService('--ifstarted moproxy');
+        await this.execCommand('/usr/local/bin/wsl-service', '--ifstarted', 'moproxy', 'stop');
       }
     }
   }
