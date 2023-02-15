@@ -1274,7 +1274,6 @@ export default class WSLBackend extends events.EventEmitter implements VMBackend
 
         if (config.kubernetes.WSLProxy.enabled && config.kubernetes.WSLProxy.address && config.kubernetes.WSLProxy.port) {
           await this.progressTracker.action('Starting proxy', 100, this.startService('--ifstopped moproxy'));
-          await this.progressTracker.action('Enabling proxy', 100, this.execService('moproxy', 'enable'));
         }
         if (config.containerEngine.imageAllowList.enabled) {
           await this.progressTracker.action('Starting image proxy', 100, this.startService('openresty'));
@@ -1477,14 +1476,14 @@ export default class WSLBackend extends events.EventEmitter implements VMBackend
       return;
     }
     const proxy = newConfig.kubernetes.WSLProxy;
+
     if (proxy) {
       this.writeProxySettings(proxy);
       if (proxy.enabled && proxy.address && proxy.port) {
-        await this.startService('--ifstopped moproxy')
-        await this.execService('moproxy', 'enable')
+        await this.execService('--ifstarted moproxy', 'reload');
+        await this.startService('--ifstopped moproxy');
       } else {
-        await this.stopService('--ifstarted moproxy')
-        this.writeProxySettings(proxy);
+        await this.stopService('--ifstarted moproxy');
       }
     }
   }
