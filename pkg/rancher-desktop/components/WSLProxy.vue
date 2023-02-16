@@ -1,5 +1,6 @@
 <script lang="ts">
 import { Checkbox } from '@rancher/components';
+import _ from 'lodash';
 import Vue from 'vue';
 
 import RdFieldset from '@pkg/components/form/RdFieldset.vue';
@@ -18,9 +19,9 @@ export default Vue.extend({
       type:    String,
       default: '',
     },
-    isProxyDisabled: {
+    emitChanges: {
       type:    Boolean,
-      default: false,
+      default: true,
     },
     preferences: {
       type:     Object as PropType<Settings>,
@@ -30,8 +31,12 @@ export default Vue.extend({
 
   methods: {
     onChange<P extends keyof RecursiveTypes<Settings>>(property: P, value: RecursiveTypes<Settings>[P]) {
-      console.log(value)
-      this.$store.dispatch('preferences/updatePreferencesData', { property, value });
+      if (this.emitChanges) {
+        const change = _.set({}, property, value);
+        this.$emit('change', Object.assign(this.preferences.kubernetes.WSLProxy, change.kubernetes.WSLProxy));
+      } else {
+        this.$store.dispatch('preferences/updatePreferencesData', { property, value });
+      }
     },
   },
 });

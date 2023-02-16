@@ -41,6 +41,12 @@
       :container-engine="settings.kubernetes.containerEngine"
       @change="onChangeEngine"
     />
+    <wsl-proxy
+      v-if="proxyRelevant"
+      :preferences="settings"
+      emit-changes
+      @change="onChangeProxy"
+    />
     <path-management-selector
       v-if="pathManagementRelevant"
       :value="pathManagementStrategy"
@@ -68,18 +74,19 @@ import { mapGetters } from 'vuex';
 import { VersionEntry } from '@pkg/backend/k8s';
 import EngineSelector from '@pkg/components/EngineSelector.vue';
 import PathManagementSelector from '@pkg/components/PathManagementSelector.vue';
+import WslProxy from '@pkg/components/WSLProxy.vue';
 import type { Settings, ContainerEngine } from '@pkg/config/settings';
 import { PathManagementStrategy } from '@pkg/integrations/pathManager';
 import { ipcRenderer } from '@pkg/utils/ipcRenderer';
 
 export default Vue.extend({
   components: {
-    Checkbox, EngineSelector, PathManagementSelector,
+    Checkbox, EngineSelector, PathManagementSelector, WslProxy
   },
   layout: 'dialog',
   data() {
     return {
-      settings: { kubernetes: {} } as Settings,
+      settings: { kubernetes: { WSLProxy: { enabled: false, address: '', noProxy: '', password: '', port: 3128, username: '' } } } as Settings,
       versions: [] as VersionEntry[],
 
       // If cachedVersionsOnly is true, it means we're offline and showing only the versions in the cache,
@@ -111,6 +118,9 @@ export default Vue.extend({
     },
     pathManagementRelevant(): boolean {
       return os.platform() === 'linux' || os.platform() === 'darwin';
+    },
+    proxyRelevant(): boolean {
+      return os.platform() === 'win32';
     },
   },
   mounted() {
@@ -153,6 +163,16 @@ export default Vue.extend({
         ipcRenderer.invoke(
           'settings-write',
           { kubernetes: { containerEngine: desiredEngine } },
+        );
+      } catch (err) {
+        console.log('invoke settings-write failed: ', err);
+      }
+    },
+    onChangeProxy(desiredProxySettings: any) {
+      try {
+        ipcRenderer.invoke(
+          'settings-write',
+          { kubernetes: { WSLProxy: desiredProxySettings } },
         );
       } catch (err) {
         console.log('invoke settings-write failed: ', err);
