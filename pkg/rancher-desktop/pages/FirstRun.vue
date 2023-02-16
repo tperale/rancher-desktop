@@ -81,12 +81,18 @@ import { ipcRenderer } from '@pkg/utils/ipcRenderer';
 
 export default Vue.extend({
   components: {
-    Checkbox, EngineSelector, PathManagementSelector, WslProxy
+    Checkbox, EngineSelector, PathManagementSelector, WslProxy,
   },
   layout: 'dialog',
   data() {
     return {
-      settings: { kubernetes: { WSLProxy: { enabled: false, address: '', noProxy: '', password: '', port: 3128, username: '' } } } as Settings,
+      settings: {
+        kubernetes: {
+          WSLProxy: {
+            enabled: false, address: '', noProxy: '', password: '', port: 3128, username: '',
+          },
+        },
+      } as Settings,
       versions: [] as VersionEntry[],
 
       // If cachedVersionsOnly is true, it means we're offline and showing only the versions in the cache,

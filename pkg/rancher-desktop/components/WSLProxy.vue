@@ -32,7 +32,8 @@ export default Vue.extend({
   methods: {
     onChange<P extends keyof RecursiveTypes<Settings>>(property: P, value: RecursiveTypes<Settings>[P]) {
       if (this.emitChanges) {
-        const change = _.set({}, property, value);
+        const change = _.set({ kubernetes: { WSLProxy: {} } }, property, value);
+
         this.$emit('change', Object.assign(this.preferences.kubernetes.WSLProxy, change.kubernetes.WSLProxy));
       } else {
         this.$store.dispatch('preferences/updatePreferencesData', { property, value });
