@@ -23,12 +23,20 @@ export default Vue.extend({
       type:    Boolean,
       default: false,
     },
+    firstRun: {
+      type:    Boolean,
+      default: false,
+    },
     preferences: {
       type:     Object as PropType<Settings>,
       required: true,
     },
   },
-
+  computed: {
+    isFieldDisabled() {
+      return !(this.preferences.WSL.proxy.enabled || this.firstRun);
+    },
+  },
   methods: {
     onChange<P extends keyof RecursiveTypes<Settings>>(property: P, value: RecursiveTypes<Settings>[P]) {
       if (this.emitChanges) {
@@ -47,21 +55,25 @@ export default Vue.extend({
   <div class="preferences-body">
     <rd-fieldset>
       <section class="wsl-proxy">
-        <rd-fieldset>
+        <rd-fieldset v-if="!firstRun">
           <checkbox
             :label="t('proxy.windows.description', { }, true)"
             :value="preferences.WSL.proxy.enabled"
             @input="onChange('WSL.proxy.enabled', $event)"
           />
+          <hr>
         </rd-fieldset>
-        <hr>
+        <h2 v-if="firstRun">
+          Configure Proxy Settings
+        </h2>
         <rd-fieldset
+          class="wsl-proxy-fieldset"
           :legend-text="t('proxy.windows.addressTitle', { }, true)"
         >
           <rd-fieldset>
             <input
               :placeholder="t('proxy.windows.address', { }, true)"
-              :disabled="!preferences.WSL.proxy.enabled"
+              :disabled="isFieldDisabled"
               :value="preferences.WSL.proxy.address"
               @input="onChange('WSL.proxy.address', $event.target.value)"
             />
@@ -70,19 +82,20 @@ export default Vue.extend({
             <input
               type="number"
               :placeholder="t('proxy.windows.port', { }, true)"
-              :disabled="!preferences.WSL.proxy.enabled"
+              :disabled="isFieldDisabled"
               :value="preferences.WSL.proxy.port"
               @input="onChange('WSL.proxy.port', $event.target.value)"
             />
           </rd-fieldset>
         </rd-fieldset>
         <rd-fieldset
+          class="wsl-proxy-fieldset"
           :legend-text="t('proxy.windows.authTitle', { }, true)"
         >
           <rd-fieldset>
             <input
               :placeholder="t('proxy.windows.username', { }, true)"
-              :disabled="!preferences.WSL.proxy.enabled"
+              :disabled="isFieldDisabled"
               :value="preferences.WSL.proxy.username"
               @input="onChange('WSL.proxy.username', $event.target.value)"
             />
@@ -91,7 +104,7 @@ export default Vue.extend({
             <input
               type="password"
               :placeholder="t('proxy.windows.password', { }, true)"
-              :disabled="!preferences.WSL.proxy.enabled"
+              :disabled="isFieldDisabled"
               :value="preferences.WSL.proxy.password"
               @input="onChange('WSL.proxy.password', $event.target.value)"
             />
@@ -103,7 +116,7 @@ export default Vue.extend({
           <rd-fieldset>
             <input
               :placeholder="t('proxy.windows.noProxy', { }, true)"
-              :disabled="!preferences.WSL.proxy.enabled"
+              :disabled="isFieldDisabled"
               :value="preferences.WSL.proxy.noProxy"
               @input="onChange('WSL.proxy.noProxy', $event.target.value)"
             />
@@ -120,5 +133,10 @@ export default Vue.extend({
     flex-direction: column;
     gap: 1rem;
     color: grey;
+  }
+  .wsl-proxy-fieldset {
+    display: flex;
+    flex-direction: row;
+    gap: .5rem;
   }
 </style>

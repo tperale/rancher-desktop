@@ -4688,8 +4688,8 @@ proxy:
     authTitle: "Authentication information"
     username: "Username"
     password: "Password"
-    noProxyTitle: "Set the 'NOPROXY' variable to do not use the proxy for some domains"
-    noProxy: "NOPROXY"
+    noProxyTitle: "A comma separeted list of host names that should exclude traffic from the proxy"
+    noProxy: "127.0.0.1,localhost,example.com"
 
 ##############################
 ### Support Page

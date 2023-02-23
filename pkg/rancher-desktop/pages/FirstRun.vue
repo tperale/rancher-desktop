@@ -45,6 +45,7 @@
       v-if="proxyRelevant"
       :preferences="settings"
       emit-changes
+      first-run
       @change="onChangeProxy"
     />
     <path-management-selector
@@ -172,8 +173,14 @@ export default Vue.extend({
     onChangeProxy(desiredProxySettings: any) {
       try {
         ipcRenderer.invoke(
-          'settings-write',
-          { WSL: { proxy: desiredProxySettings } },
+          'settings-write', {
+            WSL: {
+              proxy: {
+                ...desiredProxySettings,
+                enabled: desiredProxySettings.address && desiredProxySettings.port,
+              },
+            },
+          },
         );
       } catch (err) {
         console.log('invoke settings-write failed: ', err);
