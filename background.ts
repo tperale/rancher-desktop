@@ -912,6 +912,28 @@ class BackgroundCommandWorker implements CommandWorkerInterface {
   }
 
   /**
+   *
+   */
+  async handleUpdatesSettings(newConfig: settings.Settings): Promise<void> {
+    const imageAllowListConf = '/usr/local/openresty/nginx/conf/image-allow-list.conf';
+    const rcService = k8smanager.backend === 'wsl' ? 'wsl-service' : 'rc-service';
+
+    // Update image allow list patterns, just in case the backend doesn't need restarting
+    // TODO: review why this block is needed at all
+    if (cfg.containerEngine.imageAllowList.enabled) {
+      const allowListConf = BackendHelper.createImageAllowListConf(cfg.containerEngine.imageAllowList);
+
+      await k8smanager.executor.writeFile(imageAllowListConf, allowListConf, 0o644);
+      await k8smanager.executor.execCommand({ root: true }, rcService, '--ifstarted', 'openresty', 'reload');
+    } else {
+      await k8smanager.executor.execCommand({ root: true }, rcService, '--ifstarted', 'openresty', 'stop');
+      await k8smanager.executor.execCommand({ root: true }, 'rm', '-f', imageAllowListConf);
+    }
+
+    await k8smanager.handleUpdatesSettings(newConfig);
+  }
+
+  /**
    * Check semantics of SET commands:
    * - verify that setting names are recognized, and validate provided values
    * - returns an array of two strings:
@@ -938,23 +960,8 @@ class BackgroundCommandWorker implements CommandWorkerInterface {
       return ['no changes necessary', ''];
     }
 
-    const imageAllowListConf = '/usr/local/openresty/nginx/conf/image-allow-list.conf';
-    const rcService = k8smanager.backend === 'wsl' ? 'wsl-service' : 'rc-service';
-
-    // Update image allow list patterns, just in case the backend doesn't need restarting
-    // TODO: review why this block is needed at all
-    if (cfg.containerEngine.imageAllowList.enabled) {
-      const allowListConf = BackendHelper.createImageAllowListConf(cfg.containerEngine.imageAllowList);
-
-      await k8smanager.executor.writeFile(imageAllowListConf, allowListConf, 0o644);
-      await k8smanager.executor.execCommand({ root: true }, rcService, '--ifstarted', 'openresty', 'reload');
-    } else {
-      await k8smanager.executor.execCommand({ root: true }, rcService, '--ifstarted', 'openresty', 'stop');
-      await k8smanager.executor.execCommand({ root: true }, 'rm', '-f', imageAllowListConf);
-    }
-
     // Update the values that doesn't need a restart of the backend.
-    await k8smanager.handleUpdatesSettings(cfg);
+    await this.handleUpdatesSettings(cfg);
 
     // Check if the newly applied preferences demands a restart of the backend.
     const restartReasons = await k8smanager.requiresRestartReasons(cfg);
