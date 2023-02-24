@@ -58,11 +58,14 @@ export default Vue.extend({
 
 <style lang="scss" scoped>
   .preferences-body {
+    position: relative;
     display: flex;
     flex-direction: column;
 
     .help {
-      margin: auto 0.75rem 0.75rem auto;
+      position: absolute;
+      bottom: 1rem;
+      right: 1rem;
     }
   }
 </style>
