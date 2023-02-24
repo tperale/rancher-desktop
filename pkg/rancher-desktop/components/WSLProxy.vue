@@ -70,7 +70,9 @@ export default Vue.extend({
           class="wsl-proxy-fieldset"
           :legend-text="t('proxy.windows.addressTitle', { }, true)"
         >
-          <rd-fieldset>
+          <rd-fieldset
+            class="wsl-proxy-field"
+          >
             <input
               :placeholder="t('proxy.windows.address', { }, true)"
               :disabled="isFieldDisabled"
@@ -78,7 +80,9 @@ export default Vue.extend({
               @input="onChange('WSL.proxy.address', $event.target.value)"
             />
           </rd-fieldset>
-          <rd-fieldset>
+          <rd-fieldset
+            class="wsl-proxy-field"
+          >
             <input
               type="number"
               :placeholder="t('proxy.windows.port', { }, true)"
@@ -92,7 +96,9 @@ export default Vue.extend({
           class="wsl-proxy-fieldset"
           :legend-text="t('proxy.windows.authTitle', { }, true)"
         >
-          <rd-fieldset>
+          <rd-fieldset
+            class="wsl-proxy-field"
+          >
             <input
               :placeholder="t('proxy.windows.username', { }, true)"
               :disabled="isFieldDisabled"
@@ -100,7 +106,9 @@ export default Vue.extend({
               @input="onChange('WSL.proxy.username', $event.target.value)"
             />
           </rd-fieldset>
-          <rd-fieldset>
+          <rd-fieldset
+            class="wsl-proxy-field"
+          >
             <input
               type="password"
               :placeholder="t('proxy.windows.password', { }, true)"
@@ -111,9 +119,12 @@ export default Vue.extend({
           </rd-fieldset>
         </rd-fieldset>
         <rd-fieldset
+          class="wsl-proxy-fieldset"
           :legend-text="t('proxy.windows.noProxyTitle', { }, true)"
         >
-          <rd-fieldset>
+          <rd-fieldset
+            class="wsl-proxy-field"
+          >
             <input
               :placeholder="t('proxy.windows.noProxy', { }, true)"
               :disabled="isFieldDisabled"
@@ -138,5 +149,8 @@ export default Vue.extend({
     display: flex;
     flex-direction: row;
     gap: .5rem;
+  }
+  .wsl-proxy-field {
+    width: 100%;
   }
 </style>
