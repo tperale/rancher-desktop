@@ -779,8 +779,9 @@ export default class WSLBackend extends events.EventEmitter implements VMBackend
   protected async writeProxySettings(proxy: any): Promise<void> {
     if (proxy.address && proxy.port) {
       // Write to /etc/moproxy/proxy.ini
-      const address = `${ proxy.address }:${ proxy.port }`;
-      const contents = `[rancher-desktop-proxy]\naddress=${ address }\nprotocol=http\n`;
+      const protocol = 'socks5' ? proxy.address.startsWith('socks5://') : 'http'
+      const address = proxy.address.replace(/(https|http|socks5):\/\//g, '');
+      const contents = `[rancher-desktop-proxy]\naddress=${ address }:${ proxy.port }\nprotocol=${ protocol }\n`;
       const username = proxy.username ? `http username=${ proxy.username }\n` : '';
       const password = proxy.password ? `http password=${ proxy.password }\n` : '';
 
