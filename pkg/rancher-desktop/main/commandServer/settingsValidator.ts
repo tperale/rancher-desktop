@@ -119,7 +119,17 @@ export default class SettingsValidator {
           ),
         },
       },
-      WSL:        { integrations: this.checkPlatform('win32', this.checkBooleanMapping) },
+      WSL: {
+        integrations: this.checkPlatform('win32', this.checkBooleanMapping),
+        proxy:        {
+          enabled:  this.checkBoolean,
+          address:  this.checkString,
+          noProxy:  this.checkString,
+          password: this.checkString,
+          port:     this.checkNumber(1, 65535),
+          username: this.checkString,
+        },
+      },
       kubernetes: {
         version: this.checkKubernetesVersion,
         port:    this.checkNumber(1, 65535),

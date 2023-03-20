@@ -381,6 +381,21 @@ components:
             integrations:
               type: object
               additionalProperties: true
+            proxy:
+              type: object
+              properties:
+                enabled:
+                  type: boolean
+                address:
+                  type: string
+                noProxy:
+                  type: string
+                password:
+                  type: string
+                port:
+                  type: integer
+                username:
+                  type: string
         portForwarding:
           type: object
           properties:
