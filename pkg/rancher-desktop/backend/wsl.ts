@@ -113,7 +113,7 @@ export default class WSLBackend extends events.EventEmitter implements VMBackend
         const gatewayIP = '192.168.127.2';
         const k8sPortForwarding = `127.0.0.1:${ k8sPort }=${ gatewayIP }:${ k8sPort }`;
 
-        return childProcess.spawn(exe, ['--port-forward', k8sPortForwarding], {
+        return childProcess.spawn(exe, ['--port-forward', k8sPortForwarding, '--debug'], {
           stdio:       ['ignore', stream, stream],
           windowsHide: true,
         });
@@ -779,7 +779,7 @@ export default class WSLBackend extends events.EventEmitter implements VMBackend
   protected async writeProxySettings(proxy: any): Promise<void> {
     if (proxy.address && proxy.port) {
       // Write to /etc/moproxy/proxy.ini
-      const protocol = 'socks5' ? proxy.address.startsWith('socks5://') : 'http'
+      const protocol = proxy.address.startsWith('socks5://') ? 'socks5' : 'http';
       const address = proxy.address.replace(/(https|http|socks5):\/\//g, '');
       const contents = `[rancher-desktop-proxy]\naddress=${ address }:${ proxy.port }\nprotocol=${ protocol }\n`;
       const username = proxy.username ? `http username=${ proxy.username }\n` : '';
