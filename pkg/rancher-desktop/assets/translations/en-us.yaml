@@ -302,6 +302,15 @@ virtualMachine:
   networkingTunnel:
     legend: Networking tunnel
     label: Enable networking tunnel
+  proxy:
+    legend: WSL Proxy
+    label: Enable the proxy used by rancher-desktop
+    addressTitle: Proxy address
+    address: Address
+    port: Port
+    authTitle: Authentication information
+    username: Username
+    password: Password
 
 containerEngine:
   label: Container Engine
