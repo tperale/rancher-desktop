@@ -137,7 +137,8 @@ export const defaultSettings = {
         },
       },
       /** windows only: if set, use gvisor based network rather than host-resolver/dnsmasq. */
-      networkingTunnel: false,
+      networkingTunnel:      false,
+      networkingTunnelDebug: false,
     },
   },
 };

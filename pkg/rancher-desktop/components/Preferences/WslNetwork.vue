@@ -37,6 +37,11 @@ export default Vue.extend({
         :value="preferences.experimental.virtualMachine.networkingTunnel"
         @input="onChange('experimental.virtualMachine.networkingTunnel', $event)"
       />
+      <checkbox
+        :label="t('virtualMachine.networkingTunnel.debug')"
+        :value="preferences.experimental.virtualMachine.networkingTunnelDebug"
+        @input="onChange('experimental.virtualMachine.networkingTunnelDebug', $event)"
+      />
     </rd-fieldset>
   </div>
 </template>

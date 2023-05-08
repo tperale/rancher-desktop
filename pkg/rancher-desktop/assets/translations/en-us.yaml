@@ -302,6 +302,7 @@ virtualMachine:
   networkingTunnel:
     legend: Networking tunnel
     label: Enable networking tunnel
+    debug: Debugging
   mount:
     type:
       legend: Mount type

@@ -127,6 +127,10 @@ export default class WSLBackend extends events.EventEmitter implements VMBackend
           }
         }
 
+        if (this.cfg?.experimental.virtualMachine.networkingTunnelDebug) {
+          args.push('--debug');
+        }
+
         return childProcess.spawn(exe, args, {
           stdio:       ['ignore', stream, stream],
           windowsHide: true,
