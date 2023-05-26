@@ -36,11 +36,11 @@ iptables_redirect_to_moproxy_chain() {
 }
 
 iptables_redirect() {
-	iptables --table nat --append MOPROXY --jump REDIRECT --to-port "${port}"
+	iptables --table nat --append MOPROXY --protocol tcp --jump REDIRECT --to-port "${port}"
 }
 
 iptables_accept() {
-	iptables --table nat --append MOPROXY --destination "$1" --jump ACCEPT
+	iptables --table nat --append MOPROXY --protocol tcp --destination "$1" --jump ACCEPT
 }
 
 add_noproxy_rules() {
