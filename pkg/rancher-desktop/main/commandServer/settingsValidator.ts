@@ -130,6 +130,7 @@ export default class SettingsValidator {
             password: this.checkString,
             port:     this.checkNumber(1, 65535),
             username: this.checkString,
+            noproxy:  this.checkString,
           },
         },
       },
