@@ -555,3 +555,30 @@ export class ECRCredHelper implements Dependency, GithubDependency {
     return semver.rcompare(version1, version2);
   }
 }
+
+export class Moproxy implements Dependency, GithubDependency {
+  name = 'moproxy';
+  githubOwner = 'rancher-sandbox';
+  githubRepo = 'moproxy';
+
+  async download(context: DownloadContext): Promise<void> {
+    const baseURL = `https://github.com/${ this.githubOwner }/${ this.githubRepo }/releases/download`;
+    const tarName = `moproxy_${ context.versions.moproxy }_linux_x86_64_musl.bin.tar.gz`;
+    const moproxyURL = `${ baseURL }/v${ context.versions.moproxy }/${ tarName }`;
+    const moproxyPath = path.join(context.internalDir, 'moproxy');
+
+    await downloadTarGZ(moproxyURL, moproxyPath);
+  }
+
+  async getAvailableVersions(includePrerelease = false): Promise<string[]> {
+    return await getPublishedVersions(this.githubOwner, this.githubRepo, includePrerelease);
+  }
+
+  versionToTagName(version: string): string {
+    return `v${ version }`;
+  }
+
+  rcompareVersions(version1: string, version2: string): -1 | 0 | 1 {
+    return semver.rcompare(version1, version2);
+  }
+}
