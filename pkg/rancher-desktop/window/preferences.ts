@@ -16,8 +16,8 @@ interface NavItems {
 }
 
 const wslTabs: string[] = ['integrations', 'network', 'proxy'];
-const vmLinuxTabs: string[] = ['hardware', 'volumes'];
-const vmDarwinTabs: string[] = vmLinuxTabs.concat(['network', 'emulation']);
+const vmLinuxTabs: string[] = ['hardware', 'volumes', 'proxy'];
+const vmDarwinTabs: string[] = vmLinuxTabs.concat(['network', 'emulation', 'proxy']);
 
 export const preferencesNavItems: NavItems[] = [
   {

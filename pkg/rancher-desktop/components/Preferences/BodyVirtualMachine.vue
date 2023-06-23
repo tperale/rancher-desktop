@@ -7,6 +7,7 @@ import { mapGetters, mapState } from 'vuex';
 import PreferencesVirtualMachineEmulation from '@pkg/components/Preferences/VirtualMachineEmulation.vue';
 import PreferencesVirtualMachineHardware from '@pkg/components/Preferences/VirtualMachineHardware.vue';
 import PreferencesVirtualMachineNetwork from '@pkg/components/Preferences/VirtualMachineNetwork.vue';
+import PreferencesVirtualMachineProxy from '@pkg/components/Preferences/VirtualMachineProxy.vue';
 import PreferencesVirtualMachineVolumes from '@pkg/components/Preferences/VirtualMachineVolumes.vue';
 import RdTabbed from '@pkg/components/Tabbed/RdTabbed.vue';
 import Tab from '@pkg/components/Tabbed/Tab.vue';
@@ -26,6 +27,7 @@ export default Vue.extend({
     PreferencesVirtualMachineVolumes,
     PreferencesVirtualMachineNetwork,
     PreferencesVirtualMachineEmulation,
+    PreferencesVirtualMachineProxy,
   },
   props: {
     preferences: {
@@ -85,14 +87,19 @@ export default Vue.extend({
         :weight="2"
       />
       <tab
+        label="Proxy"
+        name="proxy"
+        :weight="3"
+      />
+      <tab
         label="Volumes"
         name="volumes"
-        :weight="3"
+        :weight="4"
       />
       <tab
         label="Hardware"
         name="hardware"
-        :weight="4"
+        :weight="5"
       />
     </template>
     <div class="virtual-machine-content">
