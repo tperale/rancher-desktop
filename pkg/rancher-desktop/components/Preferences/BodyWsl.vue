@@ -3,9 +3,9 @@
 import Vue from 'vue';
 import { mapGetters, mapState } from 'vuex';
 
+import PreferencesWslProxy from '@pkg/components/Preferences/VirtualMachineProxy.vue';
 import PreferencesWslIntegrations from '@pkg/components/Preferences/WslIntegrations.vue';
 import PreferencesWslNetwork from '@pkg/components/Preferences/WslNetwork.vue';
-import PreferencesWslProxy from '@pkg/components/Preferences/WslProxy.vue';
 import RdTabbed from '@pkg/components/Tabbed/RdTabbed.vue';
 import Tab from '@pkg/components/Tabbed/Tab.vue';
 import { Settings } from '@pkg/config/settings';
